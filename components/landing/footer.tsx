@@ -1,0 +1,67 @@
+import Link from "next/link";
+
+export function Footer() {
+  return (
+    <footer className="bg-secondary text-white py-12">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-6 md:mb-0">
+            <h2 className="font-montserrat font-bold text-2xl mb-2">Bet Yourself</h2>
+            <p className="text-gray-300 max-w-md">
+              Bet Yourself n&apos;est pas un site de jeux d&apos;argent. 
+              Tu ne peux pas gagner plus que ce que tu engages.
+            </p>
+          </div>
+          
+          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Liens utiles</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                    À propos
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Associations partenaires
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Blog
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Légal</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Mentions légales
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                    CGU
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                    Politique de confidentialité
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-12 pt-6 border-t border-gray-700 text-center text-gray-400">
+          <p>© {new Date().getFullYear()} Bet Yourself. Tous droits réservés.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
