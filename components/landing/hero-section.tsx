@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -22,7 +23,7 @@ export function HeroSection() {
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-8 py-6 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
               >
-                Je lance mon défi
+                <Link href={"engagement"}>Je lance mon défi</Link>
                 <ArrowRight className="w-5 h-5" />
               </Button>
               <Button 
