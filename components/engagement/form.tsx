@@ -34,7 +34,6 @@ export function EngagementForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialiser le formulaire avec react-hook-form et zod
   const form = useForm<ChallengeFormValues>({
     resolver: zodResolver(ChallengeFormSchema),
     defaultValues: {
