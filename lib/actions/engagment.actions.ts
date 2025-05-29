@@ -1,63 +1,56 @@
-'use server';
+"use server";
 
-import { auth } from '@clerk/nextjs/server';
-import { createSupabaseClient } from '../supabase';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { Challenge } from '@/types/types';
-import { ChallengeFormSchema, ChallengeFormValues } from '../validations/engagement.validations';
+import { revalidatePath } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 
-// Action pour créer un nouveau défi
-export async function createChallenge(formData: ChallengeFormValues) {
-  try {
-    // Récupérer l'utilisateur authentifié
-    const { userId } = await auth();
-    
-    if (!userId) {
-      throw new Error('Vous devez être connecté pour créer un défi');
-    }
+import { ChallengeFormValues } from "../validations/engagement.validations";
+import { createSupabaseClient } from "../supabase";
+import { redirect } from "next/navigation";
 
-    // Calculer la date de fin en fonction de la date de début et de la durée
-    const startDate = new Date(formData.start_date);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + formData.duration_days);
-
-    // Créer le client Supabase
-    const supabase = createSupabaseClient();
-
-    // Préparer les données du défi
-    const challengeData: Partial<Challenge> = {
-      user_id: userId,
-      title: formData.title,
-      description: formData.description,
-      amount: formData.amount,
-      duration_days: formData.duration_days,
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-      status: 'pending',
-      association_name: '', // Valeur par défaut, sera mise à jour plus tard
-      created_at: new Date().toISOString(),
-    };
-
-    // Insérer le défi dans la base de données
-    const { data, error } = await supabase
-      .from('challenges')
-      .insert(challengeData)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Erreur lors de la création du défi: ${error.message}`);
-    }
-
-    // Revalider le chemin pour mettre à jour les données
-    revalidatePath('/engagement');
-    
-    // Rediriger vers une page de confirmation ou le tableau de bord
-    redirect('/dashboard'); // Ajustez selon votre structure de routes
-
-  } catch (error) {
-    console.error('Erreur lors de la création du défi:', error);
-    throw error;
+export async function createChallenge(values: ChallengeFormValues) {
+  const { userId: authUserId } = await auth();
+  if (!authUserId) {
+    throw new Error("Utilisateur non authentifié. Veuillez vous connecter.");
   }
+  const supabase = await createSupabaseClient();
+  const { data: userProfile, error: profileError } = await supabase
+    .from("user_profiles")
+    .select("id")
+    .eq("clerk_user_id", authUserId)
+    .single();
+
+  if (profileError) {
+    console.error("Supabase error fetching user profile:", profileError);
+    throw new Error("Erreur lors de la récupération du profil utilisateur depuis la base de données.");
+  }
+  if (!userProfile) {
+    console.error("User profile not found for auth_user_id:", authUserId);
+    throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
+  }
+
+  const dbUserId = userProfile.id;
+
+  const challengeData = {
+    user_id: dbUserId,
+    title: values.title,
+    description: values.description,
+    amount: values.amount,
+    duration_days: values.duration_days,
+    start_date: values.start_date.toISOString(),
+    association_id: values.association_id,
+    status: "pending",
+  };
+
+  const { data, error: insertError } = await supabase
+    .from("challenges")
+    .insert([challengeData])
+    .select();
+
+  if (insertError) {
+    console.error("Supabase error creating challenge:", insertError);
+    throw new Error("Impossible de créer le défi dans la base de données. Détails: " + insertError.message);
+  }
+
+  revalidatePath("/engagement");
+  redirect("/");
 }

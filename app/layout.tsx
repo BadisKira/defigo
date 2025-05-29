@@ -4,7 +4,6 @@ import { inter, montserrat } from './fonts';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Navbar } from '@/components/navbar';
-// Suppression de l'import du ProfileSyncProvider
 
 export const metadata: Metadata = {
   title: 'Bet Yourself - Le seul pari où tu gagnes à réussir',
@@ -17,21 +16,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider >
-      {/* Suppression du ProfileSyncProvider */}
-        <html lang="fr" suppressHydrationWarning>
-          <body className={`${inter.variable} ${montserrat.variable} font-sans`}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Navbar />
-              {children}
-            </ThemeProvider>
-          </body>
-        </html>
+    <ClerkProvider>
+      <html lang="fr" suppressHydrationWarning>
+        <body className={`${inter.variable} ${montserrat.variable} font-sans`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navbar />
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
     </ClerkProvider>
   );
 }
