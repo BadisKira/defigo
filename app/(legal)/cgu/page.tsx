@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 
 export default function CguPage() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-6 py-12 max-w-7xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:px-16 mt-6 px-6 py-12 w-full  mx-auto">
       <div className="md:col-span-3 space-y-8">
         <h1 className="text-3xl font-bold">Conditions Générales d'Utilisation</h1>
         <Separator />

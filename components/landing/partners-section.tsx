@@ -35,7 +35,7 @@ const partners = [
 
 export function PartnersSection() {
   return (
-    <section className="py-16 bg-white">
+    <section className=" md:px-12 px-6 py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex  justify-between">
         <h2 className="text-3xl md:text-4xl font-bold text-secondary text-center mb-12">

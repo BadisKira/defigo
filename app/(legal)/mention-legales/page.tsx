@@ -1,51 +1,67 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export default function MentionsLegalesPage() {
+export default function PolitiqueConfidentialitePage() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-6 py-12 max-w-7xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:px-16 mt-6 px-6 py-12 w-full  mx-auto">
       {/* Contenu principal */}
       <div className="md:col-span-3 space-y-8">
-        <h1 className="text-3xl font-bold">Mentions légales</h1>
+        <h1 className="text-3xl font-bold">Politique de confidentialité</h1>
         <Separator />
 
-        <section id="editeur">
-          <h2 className="text-xl font-semibold mb-2">1. Éditeur du site</h2>
+        <section id="introduction">
+          <h2 className="text-xl font-semibold mb-2">1. Introduction</h2>
           <p className="text-muted-foreground">
-            [Nom de l’entreprise ou de l’individu] <br />
-            [Adresse] <br />
-            [Numéro SIRET / RCS] <br />
-            Email : [email@example.com]
+            Cette politique de confidentialité explique comment Bet Yourself collecte, utilise et protège les données personnelles de ses utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD).
           </p>
         </section>
 
-        <section id="publication">
-          <h2 className="text-xl font-semibold mb-2">2. Directeur de la publication</h2>
+        <section id="responsable">
+          <h2 className="text-xl font-semibold mb-2">2. Responsable du traitement</h2>
           <p className="text-muted-foreground">
-            [Nom complet de la personne responsable de la publication du site]
+            Le responsable du traitement des données est l’auto-entreprise [Nom à insérer], enregistrée sous le numéro SIRET [Numéro à insérer].
           </p>
         </section>
 
-        <section id="hebergeur">
-          <h2 className="text-xl font-semibold mb-2">3. Hébergeur</h2>
+        <section id="donnees">
+          <h2 className="text-xl font-semibold mb-2">3. Données collectées</h2>
           <p className="text-muted-foreground">
-            [Nom de l’hébergeur] <br />
-            [Adresse de l’hébergeur] <br />
-            Site : [https://example.com]
+            Nous collectons uniquement les données nécessaires au bon fonctionnement de la plateforme : email, nom d’utilisateur, défis créés, paiements réalisés. Les services tiers utilisés incluent Clerk, Supabase, Stripe, et Google Fonts.
           </p>
         </section>
 
-        <section id="propriete">
-          <h2 className="text-xl font-semibold mb-2">4. Propriété intellectuelle</h2>
+        <section id="duree">
+          <h2 className="text-xl font-semibold mb-2">4. Durée de conservation</h2>
           <p className="text-muted-foreground">
-            Tous les contenus présents sur le site (textes, images, logos, etc.) sont la propriété de Bet Yourself, sauf mention contraire. Toute reproduction, distribution ou usage non autorisé est strictement interdit.
+            Les données sont conservées aussi longtemps que le compte utilisateur est actif.
           </p>
         </section>
 
-        <section id="responsabilite">
-          <h2 className="text-xl font-semibold mb-2">5. Limitation de responsabilité</h2>
+        <section id="droits">
+          <h2 className="text-xl font-semibold mb-2">5. Droits des utilisateurs</h2>
           <p className="text-muted-foreground">
-            L’éditeur ne peut être tenu responsable des dommages directs ou indirects causés au matériel de l’utilisateur, ni de tout bug, incompatibilité ou dysfonctionnement résultant de l’utilisation du site.
+            Chaque utilisateur peut demander à accéder, corriger ou supprimer ses données personnelles. Pour exercer ces droits, contactez [adresse email à insérer].
+          </p>
+        </section>
+
+        <section id="cookies">
+          <h2 className="text-xl font-semibold mb-2">6. Cookies</h2>
+          <p className="text-muted-foreground">
+            Nous utilisons des cookies techniques uniquement pour le bon fonctionnement du site. Aucun cookie publicitaire ou de tracking tiers n’est utilisé.
+          </p>
+        </section>
+
+        <section id="securite">
+          <h2 className="text-xl font-semibold mb-2">7. Sécurité des données</h2>
+          <p className="text-muted-foreground">
+            Toutes les données sont stockées de manière sécurisée via Supabase et Clerk. Stripe gère les transactions financières selon les normes PCI-DSS.
+          </p>
+        </section>
+
+        <section id="modifications">
+          <h2 className="text-xl font-semibold mb-2">8. Modifications</h2>
+          <p className="text-muted-foreground">
+            Nous nous réservons le droit de modifier cette politique à tout moment. En cas de changement significatif, les utilisateurs seront notifiés par email ou sur le site.
           </p>
         </section>
       </div>
@@ -55,11 +71,14 @@ export default function MentionsLegalesPage() {
         <Card className="p-4 space-y-2 text-sm">
           <h3 className="font-semibold text-lg">Sommaire</h3>
           <ul className="space-y-1 text-muted-foreground">
-            <li><a href="#editeur" className="hover:underline">1. Éditeur du site</a></li>
-            <li><a href="#publication" className="hover:underline">2. Directeur de la publication</a></li>
-            <li><a href="#hebergeur" className="hover:underline">3. Hébergeur</a></li>
-            <li><a href="#propriete" className="hover:underline">4. Propriété intellectuelle</a></li>
-            <li><a href="#responsabilite" className="hover:underline">5. Limitation de responsabilité</a></li>
+            <li><a href="#introduction" className="hover:underline">1. Introduction</a></li>
+            <li><a href="#responsable" className="hover:underline">2. Responsable du traitement</a></li>
+            <li><a href="#donnees" className="hover:underline">3. Données collectées</a></li>
+            <li><a href="#duree" className="hover:underline">4. Durée de conservation</a></li>
+            <li><a href="#droits" className="hover:underline">5. Droits des utilisateurs</a></li>
+            <li><a href="#cookies" className="hover:underline">6. Cookies</a></li>
+            <li><a href="#securite" className="hover:underline">7. Sécurité des données</a></li>
+            <li><a href="#modifications" className="hover:underline">8. Modifications</a></li>
           </ul>
         </Card>
       </div>

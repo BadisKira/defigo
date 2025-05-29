@@ -2,10 +2,10 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-secondary text-white py-12">
+    <footer className="md:px-12 px-6 bg-secondary text-white py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-6 md:mb-0">
+          <div className="mb-6 md:mb-0 w-full">
             <h2 className="font-montserrat font-bold text-2xl mb-2">Bet Yourself</h2>
             <p className="text-gray-300 max-w-md">
               Bet Yourself n&apos;est pas un site de jeux d&apos;argent. 
@@ -13,7 +13,7 @@ export function Footer() {
             </p>
           </div>
           
-          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
+          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8 w-full">
             <div>
               <h3 className="font-semibold text-lg mb-2">Liens utiles</h3>
               <ul className="space-y-2">

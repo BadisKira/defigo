@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center bg-muted overflow-hidden">
+    <section className=" md:px-12 px-6 relative min-h-screen flex items-center bg-muted overflow-hidden">
       <div className="container mx-auto px-4 py-20 md:py-32">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="text-left relative z-10">

@@ -81,7 +81,7 @@ export function TestimonialsSection() {
   }, [isAnimating]);
 
   return (
-    <section className="py-16 md:py-24 bg-white overflow-hidden">
+    <section className="md:px-12 px-6 py-16 md:py-24 bg-white overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-secondary">
