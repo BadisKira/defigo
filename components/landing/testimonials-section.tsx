@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 
 type Testimonial = {
   id: number;
@@ -52,66 +51,79 @@ const testimonials: Testimonial[] = [
 
 export function TestimonialsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const showPrev = useCallback(() => {
-    if (!isAnimating) {
-      setIsAnimating(true);
-      setCurrentIndex((prev) => (prev === 0 ? testimonials.length - 2 : prev - 1));
-    }
-  }, [isAnimating]);
+  const checkIfAnimationNeeded = useCallback(() => {
+    if (!containerRef.current) return false;
+    
+    const containerWidth = containerRef.current.offsetWidth;
+    const cardWidth = 320; 
+    const gap = 24; 
+    const padding = 32; 
+    
+    const availableWidth = containerWidth - padding;
+    const totalCardsWidth = testimonials.length * cardWidth + (testimonials.length - 1) * gap;
+    
+    return totalCardsWidth > availableWidth;
+  }, []);
 
   const showNext = useCallback(() => {
-    if (!isAnimating) {
-      setIsAnimating(true);
-      setCurrentIndex((prev) => (prev === testimonials.length - 2 ? 0 : prev + 1));
+    if (shouldAnimate) {
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }
-  }, [isAnimating]);
+  }, [shouldAnimate]);
 
   useEffect(() => {
-    const timer = setInterval(showNext, 5000);
-    return () => clearInterval(timer);
-  }, [showNext]);
+    const checkAnimation = () => {
+      setShouldAnimate(checkIfAnimationNeeded());
+    };
+
+    checkAnimation();
+    window.addEventListener('resize', checkAnimation);
+    
+    return () => window.removeEventListener('resize', checkAnimation);
+  }, [checkIfAnimationNeeded]);
 
   useEffect(() => {
-    if (isAnimating) {
-      const timer = setTimeout(() => setIsAnimating(false), 500);
-      return () => clearTimeout(timer);
+    if (shouldAnimate) {
+      const timer = setInterval(showNext, 6000); // Change toutes les 3 secondes
+      return () => clearInterval(timer);
     }
-  }, [isAnimating]);
+  }, [showNext, shouldAnimate]);
+
+  const getTransform = () => {
+    if (!shouldAnimate) return 'translateX(0)';
+    
+    const cardWidth = 320;
+    const gap = 24;
+    const offset = currentIndex * (cardWidth + gap);
+    
+    return `translateX(-${offset}px)`;
+  };
 
   return (
     <section className="md:px-12 px-6 py-16 md:py-24 bg-white overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-12">
+        <div className="mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-secondary">
             Ils ont relevé leurs défis
           </h2>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={showPrev}
-              className="rounded-full"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={showNext}
-              className="rounded-full"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
         
-        <div className="relative">
-          <div className="flex gap-6 transition-transform duration-500 ease-in-out"
-               style={{ transform: `translateX(-${currentIndex * 33.33}%)` }}>
+        <div className="relative" ref={containerRef}>
+          <div 
+            className={`flex gap-6 ${shouldAnimate ? 'transition-transform duration-700 ease-in-out' : 'justify-center flex-wrap'}`}
+            style={{ 
+              transform: shouldAnimate ? getTransform() : 'none',
+              width: shouldAnimate ? `${testimonials.length * 320 + (testimonials.length - 1) * 24}px` : 'auto'
+            }}
+          >
             {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="min-w-[calc(33.33%-1rem)] px-2">
+              <div 
+                key={testimonial.id} 
+                className={`${shouldAnimate ? 'flex-shrink-0' : 'flex-shrink'} ${shouldAnimate ? 'w-80' : 'w-full max-w-sm'}`}
+              >
                 <Card className="h-full transition-all duration-300 hover:shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
@@ -142,6 +154,19 @@ export function TestimonialsSection() {
               </div>
             ))}
           </div>
+          
+          {shouldAnimate && (
+            <div className="flex justify-center mt-6 gap-2">
+              {testimonials.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    index === currentIndex ? 'bg-primary' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

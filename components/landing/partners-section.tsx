@@ -42,7 +42,7 @@ export function PartnersSection() {
           Nos associations partenaires
         </h2>
         <Button asChild>
-        <Link href={"associations"}> see them all</Link>
+        <Link href={"associations"}> Voir </Link>
         </Button>
         
         </div>

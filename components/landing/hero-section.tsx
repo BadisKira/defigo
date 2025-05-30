@@ -13,7 +13,7 @@ export function HeroSection() {
               🎯 Atteins tes objectifs
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-secondary mb-6 leading-tight">
-              Le seul pari où tu gagnes à réussir.
+             une promesse à tenir, un objectif à accomplir 
             </h1>
             <p className="text-xl md:text-2xl text-secondary/80 mb-10">
               Défie-toi, engage-toi, aide une asso.

@@ -1,4 +1,4 @@
-import { Inter, Montserrat } from 'next/font/google';
+import { Inter, Montserrat , Manrope} from 'next/font/google';
 
 export const inter = Inter({
   subsets: ['latin'],
@@ -12,3 +12,10 @@ export const montserrat = Montserrat({
   variable: '--font-montserrat',
   weight: ['400', '500', '600', '700'],
 });
+
+export const manrope = Manrope({
+  subsets: ['latin'],
+  display:'swap',
+  variable: '--font-manrope',
+  weight: ['400', '500', '600', '700'],
+})

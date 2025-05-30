@@ -1,13 +1,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { inter, montserrat } from './fonts';
+import { inter, manrope } from './fonts';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
-  title: 'Bet Yourself - Le seul pari où tu gagnes à réussir',
-  description: 'Défie-toi, engage-toi, aide une asso. Bet Yourself est une plateforme où vous pouvez vous fixer des objectifs, déposer une mise, et réussir ou aider une association.',
+  title: 'DéfiGo - Le seul pari où tu gagnes à réussir',
+  description: 'Défie-toi, engage-toi, aide une asso. DéfiGo est une plateforme où vous pouvez vous fixer des objectifs, déposer une mise, et réussir ou aider une association.',
 };
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="fr" suppressHydrationWarning>
-        <body className={`${inter.variable} ${montserrat.variable} font-sans`}>
+        <body className={`${inter.variable} ${manrope.variable} font-sans`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

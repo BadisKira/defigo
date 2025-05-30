@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -6,9 +7,9 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0 w-full">
-            <h2 className="font-montserrat font-bold text-2xl mb-2">Bet Yourself</h2>
+            <h2 className="font-montserrat font-bold text-2xl mb-2 flex items-center">DéfiGo</h2>
             <p className="text-gray-300 max-w-md">
-              Bet Yourself n&apos;est pas un site de jeux d&apos;argent. 
+              DéfiGo n&apos;est pas un site de jeux d&apos;argent. 
               Tu ne peux pas gagner plus que ce que tu engages.
             </p>
           </div>
