@@ -45,12 +45,12 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { createChallenge } from "@/lib/actions/engagment.actions";
 import { cn } from "@/lib/utils";
 import { ChallengeFormSchema } from "@/lib/validations/engagement.validations";
 import type { ChallengeFormValues } from "@/lib/validations/engagement.validations";
+import { createChallenge } from "@/lib/actions/engagment.actions";
 
-const PLATFORM_FEE = 0.15;
+const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.15);
 
 const associations = Array.from({ length: 10 }, (_, i) => ({
   id: `assoc_${i + 1}`,
@@ -60,7 +60,7 @@ const associations = Array.from({ length: 10 }, (_, i) => ({
 export function EngagementForm() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalAcceptTerms, setModalAcceptTerms] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -100,21 +100,32 @@ export function EngagementForm() {
 
   async function handleFinalSubmit() {
     if (!modalAcceptTerms) {
-      alert("Veuillez accepter les termes et conditions dans la modale.");
+      setFormError("Veuillez accepter les termes et conditions dans la modale.");
       return;
     }
-    setIsSubmittingForm(true);
+    
+    setIsSubmitting(true);
     setFormError(null);
+    
     try {
       const values = form.getValues();
-      await createChallenge(values);
-      router.push('/');
-      setIsModalOpen(false);
+      
+      // Utiliser la Server Action pour créer le challenge ET la transaction
+      const result = await createChallenge({
+        ...values
+      });
+
+      if (result.success && result.challengeId) {
+        router.push(`/engagement/${result.challengeId}/payment`);
+      } else {
+        throw new Error(result.error || "Erreur lors de la création du défi");
+      }
+
     } catch (error) {
       console.error("Failed to create challenge:", error);
       setFormError(error instanceof Error ? error.message : "Une erreur inconnue est survenue lors de la création du défi.");
     } finally {
-      setIsSubmittingForm(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -316,8 +327,8 @@ export function EngagementForm() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmittingForm }>
-              {isSubmittingForm ? (
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Création en cours...</>
               ) : (
                 "Créer mon défi"
@@ -344,11 +355,17 @@ export function EngagementForm() {
             <DialogDescription className="text-sm">
               Une fois le paiement validé, <b>{platformCommission.toFixed(2)} €</b> (15%) seront prélevés par la plateforme.
               Le montant reversé à l'association <b>{form.getValues("association_id") ? associations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (85%).
+              <br /><br />
+              <strong>Vous serez redirigé vers la page de paiement pour finaliser votre défi.</strong>
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-center space-x-2">
-              <Checkbox id="modal-terms" checked={modalAcceptTerms} onCheckedChange={(checked) => setModalAcceptTerms(checked as boolean)} />
+              <Checkbox 
+                id="modal-terms" 
+                checked={modalAcceptTerms} 
+                onCheckedChange={(checked) => setModalAcceptTerms(checked as boolean)} 
+              />
               <label
                 htmlFor="modal-terms"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -365,13 +382,15 @@ export function EngagementForm() {
             )}
           <DialogFooter>
             <DialogClose asChild>
-                <Button variant="outline" onClick={() => { setModalAcceptTerms(false); setFormError(null); } }>Annuler</Button>
+                <Button variant="outline" onClick={() => { setModalAcceptTerms(false); setFormError(null); }}>
+                  Annuler
+                </Button>
             </DialogClose>
-            <Button onClick={handleFinalSubmit} disabled={!modalAcceptTerms || isSubmittingForm}>
-              {isSubmittingForm ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Validation...</>
+            <Button onClick={handleFinalSubmit} disabled={!modalAcceptTerms || isSubmitting}>
+              {isSubmitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Création...</>
               ) : (
-                "Valider et Payer"
+                "Créer et Procéder au Paiement"
               )}
             </Button>
           </DialogFooter>
