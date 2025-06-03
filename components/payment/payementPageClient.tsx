@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Challenge, Transaction } from "@/types/types";
 import { createStripeCheckoutSession } from "@/lib/actions/payment.actions";
+import { formatDate } from "@/lib/utils";
 
 interface PaymentPageClientProps {
     challenge: Challenge & {
-        transactions: Transaction[];
+        transaction: Transaction
     };
 }
 
@@ -21,7 +22,6 @@ export function PaymentPageClient({ challenge }: PaymentPageClientProps) {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    const transaction = challenge.transactions[0]; // Il devrait y en avoir une seule
     const commission = challenge.amount * 0.15;
     const netAmount = challenge.amount - commission;
 
@@ -94,13 +94,13 @@ export function PaymentPageClient({ challenge }: PaymentPageClientProps) {
                         <div>
                             <span className="text-sm font-medium text-gray-500">Date de début :</span>
                             <p className="text-gray-900">
-                                {format(new Date(challenge.start_date), "PPP", { locale: fr })}
+                                {formatDate(challenge.start_date)}
                             </p>
                         </div>
                         <div>
                             <span className="text-sm font-medium text-gray-500">Date de fin :</span>
                             <p className="text-gray-900">
-                                {format(new Date(challenge.end_date), "PPP", { locale: fr })}
+                              {formatDate(challenge.start_date)}
                             </p>
                         </div>
                         <div>

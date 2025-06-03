@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import Link from "next/link";
 import { getUserChallenges } from "@/lib/actions/user-challenges.actions";
 import { ChallengeStatus } from "@/types/types";
 import {
@@ -25,7 +26,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface ChallengesTableProps {
@@ -110,7 +110,7 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
-        <Table>
+        <Table className="bg-white rounded-md">
           <TableHeader>
             <TableRow>
               <TableHead>Défi</TableHead>
@@ -122,7 +122,7 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
           </TableHeader>
           <TableBody>
             {challenges.map((challenge) => (
-              <TableRow key={challenge.id}>
+              <TableRow key={challenge.id} className="cursor-pointer hover:bg-muted/50" onClick={() => window.location.href = `/mon-aventure/${challenge.id}`}>
                 <TableCell className="font-medium">{challenge.title}</TableCell>
                 <TableCell>{challenge.amount}€</TableCell>
                 <TableCell>{challenge.association_name || "Non spécifiée"}</TableCell>
@@ -132,7 +132,14 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
                     <div>Fin: {formatDate(challenge.end_date)}</div>
                   </div>
                 </TableCell>
-                <TableCell>{getStatusBadge(challenge.status)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-between">
+                    {getStatusBadge(challenge.status)}
+                    <Button variant="secondary" size="sm" className="ml-2" asChild>
+                      <Link href={`/engagement/${challenge.id}`}>Détails</Link>
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

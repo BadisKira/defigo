@@ -9,10 +9,10 @@ export function HeroSection() {
       <div className="container mx-auto px-4 py-20 md:py-32">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="text-left relative z-10">
-            <div className="inline-block bg-primary/10 text-primary rounded-full px-4 py-2 text-sm font-medium mb-6">
+            <div className="inline-block bg-primary/10 text-primary rounded-full px-4 py-2 text-sm font-medium mb-6  ">
               🎯 Atteins tes objectifs
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-secondary mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-secondary mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800">
              une promesse à tenir, un objectif à accomplir 
             </h1>
             <p className="text-xl md:text-2xl text-secondary/80 mb-10">

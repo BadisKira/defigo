@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="fr" suppressHydrationWarning>
-        <body className={`${inter.variable} ${manrope.variable} font-sans`}>
+        <body className={`${inter.variable} ${manrope.variable} font-sans bg-muted`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

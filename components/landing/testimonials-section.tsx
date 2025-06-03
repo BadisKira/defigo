@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { Star, Quote, Trophy, Heart, Target, Zap } from "lucide-react";
 
 type Testimonial = {
   id: number;
@@ -49,124 +48,151 @@ const testimonials: Testimonial[] = [
   },
 ];
 
+// Icônes pour chaque type de défi
+const challengeIcons = {
+  "Perte de poids": Target,
+  "Arrêt du tabac": Heart,
+  "Apprentissage": Zap,
+  "Sport": Trophy,
+};
+
+// Couleurs pour chaque type de défi
+const challengeColors = {
+  "Perte de poids": "from-green-400 to-emerald-500",
+  "Arrêt du tabac": "from-red-400 to-pink-500",
+  "Apprentissage": "from-blue-400 to-indigo-500",
+  "Sport": "from-orange-400 to-yellow-500",
+};
+
 export function TestimonialsSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [shouldAnimate, setShouldAnimate] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const checkIfAnimationNeeded = useCallback(() => {
-    if (!containerRef.current) return false;
-    
-    const containerWidth = containerRef.current.offsetWidth;
-    const cardWidth = 320; 
-    const gap = 24; 
-    const padding = 32; 
-    
-    const availableWidth = containerWidth - padding;
-    const totalCardsWidth = testimonials.length * cardWidth + (testimonials.length - 1) * gap;
-    
-    return totalCardsWidth > availableWidth;
-  }, []);
-
-  const showNext = useCallback(() => {
-    if (shouldAnimate) {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }
-  }, [shouldAnimate]);
-
-  useEffect(() => {
-    const checkAnimation = () => {
-      setShouldAnimate(checkIfAnimationNeeded());
-    };
-
-    checkAnimation();
-    window.addEventListener('resize', checkAnimation);
-    
-    return () => window.removeEventListener('resize', checkAnimation);
-  }, [checkIfAnimationNeeded]);
-
-  useEffect(() => {
-    if (shouldAnimate) {
-      const timer = setInterval(showNext, 6000); // Change toutes les 3 secondes
-      return () => clearInterval(timer);
-    }
-  }, [showNext, shouldAnimate]);
-
-  const getTransform = () => {
-    if (!shouldAnimate) return 'translateX(0)';
-    
-    const cardWidth = 320;
-    const gap = 24;
-    const offset = currentIndex * (cardWidth + gap);
-    
-    return `translateX(-${offset}px)`;
-  };
-
   return (
-    <section className="md:px-12 px-6 py-16 md:py-24 bg-white overflow-hidden">
-      <div className="container mx-auto px-4">
-        <div className="mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-secondary">
+    <section className="relative md:px-12 px-6 py-20 md:py-32 overflow-hidden">
+      {/* Background avec dégradé et formes flottantes */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900"></div>
+      
+      {/* Éléments décoratifs animés */}
+      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full blur-2xl animate-pulse delay-500"></div>
+
+      {/* Grille de points décorative */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="h-full w-full bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.3)_1px,transparent_0)] bg-[length:40px_40px]"></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header avec animation */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600/10 to-pink-600/10 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-white/10">
+            <Quote className="w-5 h-5 text-purple-400" />
+            <span className="text-purple-300 font-medium">Témoignages</span>
+          </div>
+          
+          <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6 leading-tight">
             Ils ont relevé leurs défis
           </h2>
+          
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            Découvrez comment nos utilisateurs ont transformé leurs objectifs en succès grâce à la motivation financière
+          </p>
         </div>
         
-        <div className="relative" ref={containerRef}>
-          <div 
-            className={`flex gap-6 ${shouldAnimate ? 'transition-transform duration-700 ease-in-out' : 'justify-center flex-wrap'}`}
-            style={{ 
-              transform: shouldAnimate ? getTransform() : 'none',
-              width: shouldAnimate ? `${testimonials.length * 320 + (testimonials.length - 1) * 24}px` : 'auto'
-            }}
-          >
-            {testimonials.map((testimonial) => (
+        {/* Grille des témoignages */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+          {testimonials.map((testimonial, index) => {
+            const IconComponent = challengeIcons[testimonial.challenge as keyof typeof challengeIcons] || Trophy;
+            const colorClass = challengeColors[testimonial.challenge as keyof typeof challengeColors] || "from-gray-400 to-gray-500";
+            
+            return (
               <div 
                 key={testimonial.id} 
-                className={`${shouldAnimate ? 'flex-shrink-0' : 'flex-shrink'} ${shouldAnimate ? 'w-80' : 'w-full max-w-sm'}`}
+                className="group"
+                style={{
+                  animationDelay: `${index * 100}ms`
+                }}
               >
-                <Card className="h-full transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-center mb-4">
-                      <Avatar className="h-12 w-12 mr-4">
-                        <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                        <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold text-secondary">{testimonial.name}</h3>
-                        <p className="text-sm text-primary font-medium">{testimonial.challenge}</p>
-                        <div className="flex mt-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < testimonial.rating 
-                                  ? "fill-primary text-primary" 
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
+                <Card className="relative h-full bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden">
+                  {/* Badge flottant avec icône */}
+                  <div className={`absolute -top-3 -right-3 bg-gradient-to-r ${colorClass} p-3 rounded-full shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+                    <IconComponent className="w-5 h-5 text-white" />
+                  </div>
+
+                  {/* Effet de brillance au hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 transform -skew-x-12 translate-x-full group-hover:translate-x-[-100%]"></div>
+
+                  <CardContent className="p-8 relative z-10">
+                    {/* Quote icon décorative */}
+                    <div className="absolute top-6 right-6 opacity-10">
+                      <Quote className="w-12 h-12 text-white" />
+                    </div>
+
+                    {/* Profil utilisateur */}
+                    <div className="flex items-center mb-6">
+                      <div className="relative">
+                        <Avatar className="h-16 w-16 mr-4 ring-4 ring-white/20 ring-offset-2 ring-offset-transparent">
+                          <AvatarImage src={testimonial.image} alt={testimonial.name} />
+                          <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg">
+                            {testimonial.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {/* Status indicator */}
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className="font-bold text-white text-lg">{testimonial.name}</h3>
+                        <div className={`inline-flex items-center space-x-2 bg-gradient-to-r ${colorClass} bg-opacity-20 backdrop-blur-sm rounded-full px-3 py-1 mt-1`}>
+                          <IconComponent className="w-4 h-4 text-white" />
+                          <span className="text-white/90 text-sm font-medium">{testimonial.challenge}</span>
                         </div>
                       </div>
                     </div>
-                    <p className="text-gray-700 italic">&ldquo;{testimonial.text}&rdquo;</p>
+
+                    {/* Étoiles avec animation */}
+                    <div className="flex mb-6 space-x-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-5 w-5 transition-all duration-300 ${
+                            i < testimonial.rating 
+                              ? "fill-yellow-400 text-yellow-400 group-hover:scale-110" 
+                              : "text-gray-600"
+                          }`}
+                          style={{ transitionDelay: `${i * 100}ms` }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Témoignage */}
+                    <blockquote className="text-gray-200 text-lg leading-relaxed relative">
+                      <span className="text-purple-400 text-2xl font-serif absolute -top-2 -left-2">"</span>
+                      <p className="relative z-10 pl-4">{testimonial.text}</p>
+                      <span className="text-purple-400 text-2xl font-serif absolute -bottom-4 -right-2">"</span>
+                    </blockquote>
                   </CardContent>
+
+                  {/* Bordure animée */}
+                  <div className={`absolute inset-0 rounded-lg bg-gradient-to-r ${colorClass} opacity-0 group-hover:opacity-20 transition-opacity duration-500 -z-10`}></div>
+
+                  {/* Ombre colorée */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${colorClass} rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300 transform translate-y-2 blur-xl -z-10`}></div>
                 </Card>
               </div>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Call to action en bas */}
+        <div className="text-center mt-16">
+          <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/10">
+            <span className="text-gray-300">Plus de</span>
+            <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              1000+
+            </span>
+            <span className="text-gray-300">défis relevés</span>
           </div>
-          
-          {shouldAnimate && (
-            <div className="flex justify-center mt-6 gap-2">
-              {testimonials.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                    index === currentIndex ? 'bg-primary' : 'bg-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </section>
