@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogIn, UserPlus } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import {
   SignedIn,
   SignedOut,
@@ -111,7 +111,7 @@ export function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <SignUpButton>
-                    S'enregistrer
+                    {"S'enregistrer"}
                   </SignUpButton>
                 </Button>
               </div>
@@ -194,7 +194,7 @@ export function Navbar() {
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <SignUpButton>
-                          S'enregistrer
+                          {"S'enregistrer"}
                         </SignUpButton>
                       </Button>
                     </div>

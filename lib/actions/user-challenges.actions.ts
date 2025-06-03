@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "@/lib/supabase";
-import { ChallengeStatus } from "@/types/types";
+import { ChallengeStatus } from "@/types/challenge.types";
 
 export interface UserChallengesParams {
   status?: ChallengeStatus;

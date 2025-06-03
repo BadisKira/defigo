@@ -41,7 +41,7 @@ export async function isWebhookAlreadyProcessed(eventId: string): Promise<boolea
 export async function markWebhookAsProcessed(
   eventId: string, 
   eventType: string, 
-  metadata?: any
+  metadata?: unknown
 ): Promise<void> {
     
   const supabase = createSupabaseClient();

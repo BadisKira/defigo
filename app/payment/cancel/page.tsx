@@ -1,23 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
+import { Challenge } from '@/types/challenge.types'
 
 export default function PaymentSuccessPage() {
-  const [isVerifying, setIsVerifying] = useState(true)
-  const [engagement, setEngagement] = useState<any>(null)
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const sessionId = searchParams.get('session_id')
+  // const [isVerifying, setIsVerifying] = useState(true)
+  const [engagement, ] = useState<Challenge | null>(null)
 
-  useEffect(() => {
-    if (sessionId) {
-      //verifyPayment(sessionId)
-    } else {
-      router.push('/')
-    }
-  }, [sessionId])
+
+  // useEffect(() => {
+  //   if (sessionId) {
+  //     //verifyPayment(sessionId)
+  //   } else {
+  //     router.push('/')
+  //   }
+  // }, [sessionId])
 
 //   const verifyPayment = async (sessionId: string) => {
 //     try {
@@ -53,7 +51,7 @@ export default function PaymentSuccessPage() {
         </div>
         
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Engagement activé ! 🎉
+          {"Engagement activé ! 🎉"}
         </h1>
         
         <p className="text-gray-600 mb-6">

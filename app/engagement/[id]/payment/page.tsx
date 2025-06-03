@@ -4,10 +4,11 @@ import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation";
 
 interface PageProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
+
 export default async function EngagementPayementPage({ params }: PageProps) {
 
     const { userId } = await auth();
@@ -19,10 +20,7 @@ export default async function EngagementPayementPage({ params }: PageProps) {
     const { id } = await params;
     const challenge = await getChallenge(id);
 
-    console.log(id)
-    console.log(challenge)
-
-    //@ts-ignore
+   
     return <PaymentPageClient challenge={challenge} />
 
 }

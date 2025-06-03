@@ -19,7 +19,6 @@ export function AssociationSearch() {
     setSearchQuery,
     nextPage,
     prevPage,
-    formatAssociationForModel,
   } = useAssociations();
 
   useEffect(() => {
@@ -36,10 +35,7 @@ export function AssociationSearch() {
     }
   }, [debouncedSearchTerm, setSearchQuery]);
 
-  const handleSelectAssociation = (association: any) => {
-    const formattedAssociation = formatAssociationForModel(association);
-    console.log("Association sélectionnée:", formattedAssociation);
-  };
+ 
 
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -99,7 +95,9 @@ export function AssociationSearch() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleSelectAssociation(association)}
+                    onClick={() =>{
+                      console.log("Search for an association")
+                    }}
                   >
                     Sélectionner
                   </Button>

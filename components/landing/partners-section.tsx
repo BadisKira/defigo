@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { ChevronRight, Star, Users, MapPin } from "lucide-react";
 import { getAssociations } from "@/lib/actions/categorie.actions";
+import Image from "next/image";
 
 export async function PartnersSection() {
-  const { success, data } = await getAssociations({ limit: 7 });
+  const { data } = await getAssociations({ limit: 7 });
 
   const gradients = [
     "from-purple-400 to-pink-400",
@@ -74,7 +75,7 @@ export async function PartnersSection() {
                 {/* Avatar avec gradient */}
                 <div className={`relative w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${gradients[index % gradients.length]} rounded-2xl shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                   {partner.logo_url ? (
-                    <img 
+                    <Image
                       src={partner.logo_url} 
                       alt={partner.name}
                       className="w-10 h-10 object-cover rounded-lg"

@@ -167,9 +167,9 @@ export function TestimonialsSection() {
 
                     {/* Témoignage */}
                     <blockquote className="text-gray-200 text-lg leading-relaxed relative">
-                      <span className="text-purple-400 text-2xl font-serif absolute -top-2 -left-2">"</span>
+                      <span className="text-purple-400 text-2xl font-serif absolute -top-2 -left-2">&quot;</span>
                       <p className="relative z-10 pl-4">{testimonial.text}</p>
-                      <span className="text-purple-400 text-2xl font-serif absolute -bottom-4 -right-2">"</span>
+                      <span className="text-purple-400 text-2xl font-serif absolute -bottom-4 -right-2">&quot;</span>
                     </blockquote>
                   </CardContent>
 

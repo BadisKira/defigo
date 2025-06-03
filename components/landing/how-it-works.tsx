@@ -64,7 +64,7 @@ export function HowItWorksSection() {
         <div className="text-center mb-16 space-y-4">
           <div className="flex items-center justify-center space-x-2 text-blue-600 font-medium">
             <Sparkles className="w-5 h-5" />
-            <span className="text-sm uppercase tracking-wider">Guide d'utilisation</span>
+            <span className="text-sm uppercase tracking-wider">{"Guide d'utilisation"}</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight">
             Comment ça marche ?

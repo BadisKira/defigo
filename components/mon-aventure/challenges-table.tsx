@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { getUserChallenges } from "@/lib/actions/user-challenges.actions";
-import { ChallengeStatus } from "@/types/types";
 import {
   Table,
   TableBody,
@@ -25,17 +24,18 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Challenge, ChallengeStatus } from "@/types/challenge.types";
 
 interface ChallengesTableProps {
   status?: ChallengeStatus;
 }
 
-const LIMIT=6;
+const LIMIT = 6;
 
 export function ChallengesTable({ status }: ChallengesTableProps) {
-  const [challenges, setChallenges] = useState<any[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -44,11 +44,7 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadChallenges(1);
-  }, [status]);
-
-  const loadChallenges = async (page: number) => {
+  const loadChallenges = useCallback(async (page: number) => {
     try {
       setLoading(true);
       const result = await getUserChallenges({
@@ -63,7 +59,12 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [status]);
+
+  useEffect(() => {
+    loadChallenges(1);
+  }, [status, loadChallenges]);
+
 
   const getStatusBadge = (status: ChallengeStatus) => {
     switch (status) {
@@ -95,11 +96,11 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <p className="text-muted-foreground text-center mb-4">
-            Vous n'avez pas encore de défis {status ? getStatusLabel(status) : ""}.
+            {"Vous n'avez pas encore de défis"} {status ? getStatusLabel(status) : ""}.
           </p>
           <Button asChild variant="default">
             <Link href="/engagement">
-            Créer mon premier défi
+              Créer mon premier défi
             </Link>
           </Button>
         </CardContent>
@@ -152,15 +153,15 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => {
-                  if(pagination.page > 1) loadChallenges(pagination.page - 1)
+                  if (pagination.page > 1) loadChallenges(pagination.page - 1)
                 }}
                 className={cn(
                   'cursor-pointer',
                   pagination.page === 1 && "cursor-not-allowed opacity-50",
-              )}
+                )}
               />
             </PaginationItem>
-            
+
             {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
               <PaginationItem key={page}>
                 <PaginationLink
@@ -171,16 +172,16 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
                 </PaginationLink>
               </PaginationItem>
             ))}
-            
+
             <PaginationItem>
               <PaginationNext
                 onClick={() => {
-                  if(pagination.page < pagination.totalPages) loadChallenges(pagination.page + 1)
+                  if (pagination.page < pagination.totalPages) loadChallenges(pagination.page + 1)
                 }}
                 className={cn(
                   'cursor-pointer',
                   pagination.page === pagination.totalPages && "cursor-not-allowed opacity-50",
-              )}
+                )}
               />
             </PaginationItem>
           </PaginationContent>

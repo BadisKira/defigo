@@ -1,15 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
+import { Challenge } from '@/types/challenge.types'
 
 export default function PaymentSuccessPage() {
-  const [isVerifying, setIsVerifying] = useState(true)
-  const [engagement, setEngagement] = useState<any>(null)
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const sessionId = searchParams.get('session_id')
+  // const [isVerifying, setIsVerifying] = useState(true)
+  const [engagement, ] = useState<Challenge | null>(null)
+  // const searchParams = useSearchParams()
+  // const router = useRouter()
+  // const sessionId = searchParams.get('session_id')
 
 //   useEffect(() => {
 //     if (sessionId) {
@@ -72,14 +72,14 @@ export default function PaymentSuccessPage() {
 
         <div className="space-y-3">
           <Link 
-            href="/dashboard"
+            href="/mon-aventure"
             className="block w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700"
           >
             Voir mes engagements
           </Link>
           
           <Link 
-            href="/engagement/create"
+            href="/engagement"
             className="block w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300"
           >
             Créer un nouvel engagement

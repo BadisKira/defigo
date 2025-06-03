@@ -1,5 +1,5 @@
 import { UserChallengesSummary } from "@/lib/actions/user-challenges.actions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent,  CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Target, AlertTriangle, Calendar } from "lucide-react";
 
 interface ChallengesSummaryProps {
@@ -10,7 +10,6 @@ export function ChallengesSummary({ summary }: ChallengesSummaryProps) {
   const {
     totalChallenges,
     successfulChallenges,
-    failedChallenges,
     pendingChallenges,
     totalDonated,
   } = summary;

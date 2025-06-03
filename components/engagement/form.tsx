@@ -93,7 +93,7 @@ export function EngagementForm() {
     }
   }, [watchedAmount]);
 
-  async function onFormSubmit(data: ChallengeFormValues) {
+  async function onFormSubmit() {
     setFormError(null);
     setIsModalOpen(true);
   }
@@ -190,7 +190,7 @@ export function EngagementForm() {
                   {watchedAmount >= 10 && watchedAmount <= 500 && (
                     <FormDescription className="mt-2 text-sm text-gray-600">
                       Commission plateforme (15%): {platformCommission.toFixed(2)} €<br />
-                      Montant potentiel reversé à l'association (85%): {associationPayout.toFixed(2)} €
+                      {"Montant potentiel reversé à l'association"} (85%): {associationPayout.toFixed(2)} €
                     </FormDescription>
                   )}
                   <FormMessage />
@@ -298,7 +298,7 @@ export function EngagementForm() {
                   </FormControl>
                   <div className="space-y-0.5">
                     <FormLabel htmlFor="allow_ai_usage" className="text-sm font-normal">
-                      Autoriser l'utilisation de l'IA pour le suivi (optionnel)
+                     {" Autoriser l'utilisation de l'IA pour le suivi (optionnel)"}
                     </FormLabel>
                   </div>
                 </FormItem>
@@ -319,7 +319,7 @@ export function EngagementForm() {
                   </FormControl>
                   <div className="space-y-0.5">
                     <FormLabel htmlFor="accept_terms_form" className="text-sm font-normal">
-                      J'accepte les termes et conditions générales d'utilisation.
+                      {"J'accepte les termes et conditions générales d'utilisation."}
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -341,7 +341,7 @@ export function EngagementForm() {
       <div className="md:col-span-1 mt-8 md:mt-0">
         <Alert>
           <InfoIcon className="h-5 w-5" />
-          <AlertTitle className="font-semibold">Accès à l'application mobile</AlertTitle>
+          <AlertTitle className="font-semibold">{"Accès à l'application mobile"}</AlertTitle>
           <AlertDescription className="text-sm">
             Une fois votre défi créé et le paiement validé, vous aurez accès à une application mobile dédiée pour vous aider à suivre votre progression et à réussir votre engagement !
           </AlertDescription>
@@ -354,7 +354,7 @@ export function EngagementForm() {
             <DialogTitle>Confirmer la création du défi</DialogTitle>
             <DialogDescription className="text-sm">
               Une fois le paiement validé, <b>{platformCommission.toFixed(2)} €</b> (15%) seront prélevés par la plateforme.
-              Le montant reversé à l'association <b>{form.getValues("association_id") ? associations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (85%).
+              {"Le montant reversé à l'association"} <b>{form.getValues("association_id") ? associations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (85%).
               <br /><br />
               <strong>Vous serez redirigé vers la page de paiement pour finaliser votre défi.</strong>
             </DialogDescription>
@@ -370,7 +370,7 @@ export function EngagementForm() {
                 htmlFor="modal-terms"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                J'accepte les termes & CGU pour finaliser.
+                {"J'accepte les termes & CGU pour finaliser."}
               </label>
             </div>
           </div>

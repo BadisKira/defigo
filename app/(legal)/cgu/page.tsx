@@ -5,22 +5,22 @@ export default function CguPage() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:px-16 mt-6 px-6 py-12 w-full  mx-auto">
       <div className="md:col-span-3 space-y-8">
-        <h1 className="text-3xl font-bold">Conditions Générales d'Utilisation</h1>
+        <h1 className="text-3xl font-bold">Conditions Générales d&apos;Utilisation</h1>
         <Separator />
 
         <section id="presentation">
           <h2 className="text-xl font-semibold mb-2">1. Présentation du service</h2>
           <p className="text-muted-foreground">
-            Bet Yourself est une plateforme d'engagement personnel exploitée par une auto-entreprise enregistrée en France sous le numéro SIRET [à compléter].
-            Elle permet aux utilisateurs de se fixer un défi personnel, de déposer une somme d'argent associée, et de récupérer cette somme en cas de réussite. En cas d'échec, la somme est reversée à une association choisie par l'utilisateur, après déduction d'une commission.
+            Bet Yourself est une plateforme d&apos;engagement personnel exploitée par une auto-entreprise enregistrée en France sous le numéro SIRET [à compléter].
+            Elle permet aux utilisateurs de se fixer un défi personnel, de déposer une somme d&apos;argent associée, et de récupérer cette somme en cas de réussite. En cas d&apos;échec, la somme est reversée à une association choisie par l&apos;utilisateur, après déduction d&apos;une commission.
           </p>
         </section>
 
         <section id="fonctionnement">
           <h2 className="text-xl font-semibold mb-2">2. Fonctionnement</h2>
           <p className="text-muted-foreground">
-            L'utilisateur renseigne un défi, une date de début, une durée, un montant, et une association bénéficiaire. Le paiement est traité via un prestataire sécurisé.
-            La réussite du défi est déclarée par l'utilisateur à la fin de la période. Aucune validation externe n’est exigée à ce stade.
+            L&apos;utilisateur renseigne un défi, une date de début, une durée, un montant, et une association bénéficiaire. Le paiement est traité via un prestataire sécurisé.
+            La réussite du défi est déclarée par l&apos;utilisateur à la fin de la période. Aucune validation externe n’est exigée à ce stade.
           </p>
         </section>
 
@@ -34,7 +34,7 @@ export default function CguPage() {
         </section>
 
         <section id="mobile">
-          <h2 className="text-xl font-semibold mb-2">4. Accès à l'application mobile</h2>
+          <h2 className="text-xl font-semibold mb-2">4. Accès à l&apos;application mobile</h2>
           <p className="text-muted-foreground">
             L’application mobile est en cours de développement. Son accès sera réservé aux utilisateurs ayant validé un paiement sur la plateforme. Elle offrira des fonctionnalités de rappel, de suivi de progression, et d’aide à la réussite des défis.
           </p>
@@ -57,7 +57,7 @@ export default function CguPage() {
         <section id="loi">
           <h2 className="text-xl font-semibold mb-2">7. Loi applicable</h2>
           <p className="text-muted-foreground">
-            Les présentes conditions sont régies par le droit français. Tout litige sera porté devant les tribunaux compétents du ressort du siège social de l'éditeur.
+            Les présentes conditions sont régies par le droit français. Tout litige sera porté devant les tribunaux compétents du ressort du siège social de l&apos;éditeur.
           </p>
         </section>
       </div>

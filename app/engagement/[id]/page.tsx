@@ -9,9 +9,7 @@ import {
   markChallengeAsFailed,
   MarkChallengeAsSuccessfulParams,
   MarkChallengeAsFailedParams,
-  ChallengeWithTransaction
 } from "@/lib/actions/engagment.actions";
-import { ChallengeStatus } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Calendar, Euro, Trophy, XCircle } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
+import { ChallengeStatus } from "@/types/challenge.types";
 
 export const metadata: Metadata = {
   title: "Détails du Challenge | Bet Yourself",
@@ -76,35 +75,35 @@ async function handleMarkAsFailed(formData: FormData, challengeId: string) {
   redirect(`/engagement/${challengeId}?failed=true`);
 }
 
+interface PageProps {
+  params: Promise<{
+    id: string
+  }>
+}
 // Composant de page
 export default async function ChallengeDetailsPage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: PageProps) {
   const { userId } = await auth();
-
+  const { id } = await params;
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const result = await getChallenge(params.id);
+  const challenge = await getChallenge(id);
 
-  if (!result.challenge) {
-    if (result.error) {
-      console.error("Erreur lors de la récupération du challenge:", result.error);
-    }
+  if (!challenge) {
+    console.error("Erreur lors de la récupération du challenge:");
     notFound();
   }
 
-  const challenge = result.challenge as ChallengeWithTransaction;
 
   const isPending = challenge.status === "pending";
   const isSuccess = challenge.status === "success";
   const isFailed = challenge.status === "failed";
 
   return (
-    
+
     <div className="container max-w-4xl md:px-16 px-6  mx-auto py-24 ">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
         <Button variant="ghost" size="sm" asChild className="w-fit">
@@ -183,7 +182,7 @@ export default async function ChallengeDetailsPage({
               <div>
                 <h3 className="font-medium text-base mb-2">Notes</h3>
                 <div className="bg-muted/30 p-3 rounded-md italic">
-                  <p className="text-muted-foreground">"{challenge.accomplishment_note}"</p>
+                  <p className="text-muted-foreground">{"challenge.accomplishment_note"}</p>
                 </div>
               </div>
             )}
@@ -208,20 +207,19 @@ export default async function ChallengeDetailsPage({
                 <CardHeader className="bg-green-50/50 dark:bg-green-950/10 border-b border-green-100 dark:border-green-900/20">
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-green-500" />
-                    J'ai réussi mon challenge !
+                    {"J'ai réussi mon challenge !"}
                   </CardTitle>
                   <CardDescription>
-                    Félicitations ! Vous pouvez récupérer 85% de votre mise ou choisir de la donner à l'association.
-                  </CardDescription>
+                    {"Félicitations ! Vous pouvez récupérer 85% de votre mise ou choisir de la donner à l'association."}                  </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <form action={async (formData) => {
                     "use server"
-                    await handleMarkAsSuccessful(formData, params.id);
+                    await handleMarkAsSuccessful(formData, id);
                   }} className="space-y-5">
                     <div className="flex items-center space-x-2 p-3 bg-green-50/50 dark:bg-green-950/10 rounded-md">
                       <Switch id="donateAnyway" name="donateAnyway" />
-                      <Label htmlFor="donateAnyway" className="font-medium">Donner quand même à l'association</Label>
+                      <Label htmlFor="donateAnyway" className="font-medium">{"Donner quand même à l'association"}</Label>
                     </div>
 
                     <div className="space-y-2">
@@ -236,7 +234,7 @@ export default async function ChallengeDetailsPage({
 
                     <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
                       <Trophy className="mr-2 h-4 w-4" />
-                      Valider ma réussite
+                     {" Valider ma réussite"}
                     </Button>
                   </form>
                 </CardContent>
@@ -246,16 +244,16 @@ export default async function ChallengeDetailsPage({
                 <CardHeader className="bg-red-50/50 dark:bg-red-950/10 border-b border-red-100 dark:border-red-900/20">
                   <CardTitle className="flex items-center gap-2">
                     <XCircle className="h-5 w-5 text-red-500" />
-                    Je n'ai pas réussi mon challenge
+                   {" Je n'ai pas réussi mon challenge"}
                   </CardTitle>
                   <CardDescription>
-                    Pas de souci, votre mise sera reversée à l'association que vous avez choisie.
+                    {"Pas de souci, votre mise sera reversée à l'association que vous avez choisie."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <form action={async (formData) => {
                     "use server"
-                    await handleMarkAsFailed(formData, params.id);
+                    await handleMarkAsFailed(formData, id);
                   }} className="space-y-5">
                     <div className="space-y-2">
                       <Label htmlFor="failedNotes" className="text-sm font-medium">Notes (optionnel)</Label>
@@ -269,7 +267,7 @@ export default async function ChallengeDetailsPage({
 
                     <Button type="submit" variant="outline" className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700">
                       <XCircle className="mr-2 h-4 w-4" />
-                      Confirmer l'échec
+                      {"Confirmer l'échec"}
                     </Button>
                   </form>
                 </CardContent>
@@ -323,7 +321,7 @@ export default async function ChallengeDetailsPage({
                       </svg>
                       Vos notes
                     </h3>
-                    <p className="text-sm italic bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-100 dark:border-gray-700">"challenge.notes"</p>
+                    <p className="text-sm italic bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-100 dark:border-gray-700">{"challenge.notes"}</p>
                   </div>
                 )}
               </div>
@@ -360,7 +358,7 @@ export default async function ChallengeDetailsPage({
                 Merci pour votre participation
               </CardTitle>
               <CardDescription>
-                Ce n'est pas grave, l'important c'est d'avoir essayé !
+                {"Ce n'est pas grave, l'important c'est d'avoir essayé !"}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -371,7 +369,7 @@ export default async function ChallengeDetailsPage({
                       <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                     </svg>
                   </div>
-                  <p>Votre mise de <span className="font-semibold text-red-700 dark:text-red-400">{challenge.amount}€</span> a été reversée à l'association <span className="font-semibold">{challenge.association_name || "choisie"}</span>.</p>
+                  <p>Votre mise de <span className="font-semibold text-red-700 dark:text-red-400">{challenge.amount}€</span> {"a été reversée à l'association"} <span className="font-semibold">{challenge.association_name || "choisie"}</span>.</p>
                 </div>
 
                 {1 == 1 && (

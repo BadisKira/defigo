@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe/stripe";
 import { createSupabaseClient } from "@/lib/supabase";
+import { Challenge } from "@/types/challenge.types";
 
 
 
@@ -41,18 +42,24 @@ export async function createStripeCheckoutSession({
             throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
         }
 
-        const { data: challenge, error: getChallengeError } = await supabase
+        const { data, error: getChallengeError } = await supabase
             .from("challenges")
             .select("*")
             .eq("id", challengeId)
             .eq("user_id", userProfile.id)
             .eq("status", "pending")
+            .single();
 
+
+        const challenge = data as Challenge;
 
         if (!challenge) {
             return { success: false, error: "Défi non trouvé" };
         }
 
+        if (getChallengeError) {
+            throw new Error(getChallengeError.message);
+        }
         // Créer la session Stripe
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -78,11 +85,11 @@ export async function createStripeCheckoutSession({
             },
         });
 
-        const { data: transaction, error: getTransactionError } = await supabase
-            .from('transaction')
-            .update({ stripe_session_id: session.id })
-            .eq('challenge_id', challengeId)
-            .eq('status', 'initiated');
+        // const { data: transaction, error: getTransactionError } = await supabase
+        //     .from('transaction')
+        //     .update({ stripe_session_id: session.id })
+        //     .eq('challenge_id', challengeId)
+        //     .eq('status', 'initiated');
 
 
         return {

@@ -7,23 +7,21 @@ import { fr } from "date-fns/locale";
 import { Loader2, ArrowLeft, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { Challenge, Transaction } from "@/types/types";
 import { createStripeCheckoutSession } from "@/lib/actions/payment.actions";
-import { formatDate } from "@/lib/utils";
+import { Challenge } from "@/types/challenge.types";
 
-interface PaymentPageClientProps {
-    challenge: Challenge & {
-        transaction: Transaction
-    };
-}
 
-export function PaymentPageClient({ challenge }: PaymentPageClientProps) {
+
+export function PaymentPageClient({ challenge }: {
+    challenge: Challenge
+}) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
     const commission = challenge.amount * 0.15;
     const netAmount = challenge.amount - commission;
+
 
     const handlePayment = async () => {
         try {
@@ -38,7 +36,6 @@ export function PaymentPageClient({ challenge }: PaymentPageClientProps) {
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
             } else {
-                console.log("Erreur dans payementpage client =>", result.error);
                 throw new Error(result.error || "Erreur lors de la création de la session de paiement");
             }
 
@@ -94,13 +91,13 @@ export function PaymentPageClient({ challenge }: PaymentPageClientProps) {
                         <div>
                             <span className="text-sm font-medium text-gray-500">Date de début :</span>
                             <p className="text-gray-900">
-                                {formatDate(challenge.start_date)}
+                                {format(new Date(challenge.start_date), "PPP", { locale: fr })}
                             </p>
                         </div>
                         <div>
                             <span className="text-sm font-medium text-gray-500">Date de fin :</span>
                             <p className="text-gray-900">
-                              {formatDate(challenge.start_date)}
+                                {format(new Date(challenge.start_date), "PPP", { locale: fr })}
                             </p>
                         </div>
                         <div>
