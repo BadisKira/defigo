@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { ChevronRight, Star, Users, MapPin } from "lucide-react";
-import { getAssociations } from "@/lib/actions/categorie.actions";
+import { getAssociations } from "@/lib/actions/association.actions";
 import Image from "next/image";
 
 export async function PartnersSection() {
