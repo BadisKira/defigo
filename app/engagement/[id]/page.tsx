@@ -122,7 +122,7 @@ export default async function ChallengeDetailsPage({
               <div className="flex items-center gap-2 mb-2">
                 {getStatusBadge(challenge.status)}
                 <span className="text-sm text-muted-foreground">
-                  {challenge.status === 'pending' ? "En cours jusqu'au " + formatDate(challenge.end_date) : ''}
+                  {challenge.status === 'pending' ? "En cours jusqu'au " + formatDate(challenge.end_date!) : ''}
                 </span>
               </div>
               <CardTitle className="text-xl md:text-2xl">{challenge.title}</CardTitle>
@@ -150,7 +150,7 @@ export default async function ChallengeDetailsPage({
                 </div>
                 <div className="flex flex-col">
                   <span className="text-muted-foreground">Fin</span>
-                  <span className="font-medium">{formatDate(challenge.end_date)}</span>
+                  <span className="font-medium">{formatDate(challenge.end_date!)}</span>
                 </div>
               </div>
             </div>
@@ -173,12 +173,12 @@ export default async function ChallengeDetailsPage({
               </h3>
               <div className="pl-2 border-l-2 border-primary/20">
                 <p className="font-medium">
-                  {challenge.association_name || "Non spécifiée"}
+                  {challenge.associations.name || "Non spécifiée"}
                 </p>
               </div>
             </div>
 
-            {challenge.accomplishment_note && (
+            {challenge.feedback_id && (
               <div>
                 <h3 className="font-medium text-base mb-2">Notes</h3>
                 <div className="bg-muted/30 p-3 rounded-md italic">
@@ -309,7 +309,7 @@ export default async function ChallengeDetailsPage({
                   <p>
                     {challenge.transaction?.status === "refunded"
                       ? "Vous avez récupéré 85% de votre mise, soit " + (challenge.amount * 0.85).toFixed(2) + "€."
-                      : "Vous avez choisi de donner votre mise à l'association " + (challenge.association_name || "choisie") + ". Merci pour votre générosité !"}
+                      : "Vous avez choisi de donner votre mise à l'association " + (challenge.associations.name || "choisie") + ". Merci pour votre générosité !"}
                   </p>
                 </div>
 
@@ -369,7 +369,7 @@ export default async function ChallengeDetailsPage({
                       <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                     </svg>
                   </div>
-                  <p>Votre mise de <span className="font-semibold text-red-700 dark:text-red-400">{challenge.amount}€</span> {"a été reversée à l'association"} <span className="font-semibold">{challenge.association_name || "choisie"}</span>.</p>
+                  <p>Votre mise de <span className="font-semibold text-red-700 dark:text-red-400">{challenge.amount}€</span> {"a été reversée à l'association"} <span className="font-semibold">{challenge.associations.name || "choisie"}</span>.</p>
                 </div>
 
                 {1 == 1 && (

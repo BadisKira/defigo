@@ -94,13 +94,6 @@ export async function POST(req: Request) {
       break;
     }
     case 'user.deleted': {
-      // Option 1: Supprimer l'utilisateur
-      // const { error } = await supabase
-      //   .from('user_profiles')
-      //   .delete()
-      //   .eq('clerk_user_id', id);
-
-      // Option 2: Marquer l'utilisateur comme supprimé (soft delete)
       const { error } = await supabase
         .from('user_profiles')
         .update({

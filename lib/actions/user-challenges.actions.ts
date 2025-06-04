@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "@/lib/supabase";
 import { ChallengeStatus } from "@/types/challenge.types";
+import { Association } from "@/types/types";
 
 export interface UserChallengesParams {
   status?: ChallengeStatus;
@@ -55,7 +56,8 @@ export async function getUserChallenges({
     .select(
       `
       *,
-      transactions (*)
+      transactions (*),
+      associations(id,name)
     `,
       { count: "exact" }
     )
@@ -120,7 +122,8 @@ export async function getUserChallengesSummary() {
   // Récupérer les associations auxquelles l'utilisateur a donné
   const { data: donations, error: donationsError } = await supabase
     .from("challenges")
-    .select("association_id, association_name, amount")
+    .select(`amount,
+      associations(id,name) `)
     .eq("user_id", userProfile.id)
     .eq("status", "failed");
 
@@ -133,7 +136,7 @@ export async function getUserChallengesSummary() {
   const successfulChallenges = stats.filter(c => c.status === "success").length;
   const failedChallenges = stats.filter(c => c.status === "failed").length;
   const pendingChallenges = stats.filter(c => c.status === "pending").length;
-  
+
   // Calculer le montant total donné (15% de commission déduite)
   const totalDonated = donations.reduce((sum, challenge) => {
     const donationAmount = challenge.amount * 0.85; // 85% du montant va à l'association
@@ -142,17 +145,21 @@ export async function getUserChallengesSummary() {
 
   // Regrouper les dons par association
   const associationMap = new Map();
+
+
+
   donations.forEach(donation => {
-    if (!donation.association_id) return;
-    
+    const typedAssociation = donation.associations as Partial<Association>;
+    if (!typedAssociation.id) return;
+
     const donationAmount = donation.amount * 0.85;
-    if (associationMap.has(donation.association_id)) {
-      const assoc = associationMap.get(donation.association_id);
+    if (associationMap.has(typedAssociation.id)) {
+      const assoc = associationMap.get(typedAssociation.id);
       assoc.amount += donationAmount;
     } else {
-      associationMap.set(donation.association_id, {
-        id: donation.association_id,
-        name: donation.association_name || "Association inconnue",
+      associationMap.set(typedAssociation.id, {
+        id: typedAssociation.id,
+        name: typedAssociation.name || "Association inconnue",
         amount: donationAmount,
       });
     }

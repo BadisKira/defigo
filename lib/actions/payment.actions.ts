@@ -5,9 +5,6 @@ import { stripe } from "@/lib/stripe/stripe";
 import { createSupabaseClient } from "@/lib/supabase";
 import { Challenge } from "@/types/challenge.types";
 
-
-
-
 export interface CreateCheckoutSessionResult {
     success: boolean;
     checkoutUrl?: string;
@@ -78,18 +75,18 @@ export async function createStripeCheckoutSession({
             ],
             mode: 'payment',
             success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/engagment/${challengeId}/payment`,
+            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/engagement/${challengeId}/payment`,
             metadata: {
                 challengeId,
                 userId,
             },
         });
 
-        // const { data: transaction, error: getTransactionError } = await supabase
-        //     .from('transaction')
-        //     .update({ stripe_session_id: session.id })
-        //     .eq('challenge_id', challengeId)
-        //     .eq('status', 'initiated');
+        await supabase
+            .from('transaction')
+            .update({ stripe_session_id: session.id })
+            .eq('challenge_id', challengeId)
+            .eq('status', 'initiated');
 
 
         return {

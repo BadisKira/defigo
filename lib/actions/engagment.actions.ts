@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 
 import { ChallengeFormValues } from "../validations/engagement.validations";
 import { createSupabaseClient } from "../supabase";
-import { ChallengeActionResult, ChallengeStatus, ChallengeWithTransaction, CreateChallengeResult } from "@/types/challenge.types";
+import { ChallengeActionResult, ChallengeStatus,ChallengeWithTransactionAndAssoc, CreateChallengeResult } from "@/types/challenge.types";
 import { Transaction } from "@/types/transaction.types";
 
 
@@ -26,6 +26,8 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
       .select("id")
       .eq("clerk_user_id", authUserId)
       .single();
+
+      
 
     if (profileError || !userProfile) {
       throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
@@ -99,7 +101,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
 
 
-export async function getChallenge(challenge_id: string):Promise<ChallengeWithTransaction> {
+export async function getChallenge(challenge_id: string):Promise<ChallengeWithTransactionAndAssoc> {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Vous devez être connecté");
@@ -124,7 +126,8 @@ export async function getChallenge(challenge_id: string):Promise<ChallengeWithTr
     .from('challenges')
     .select(`
       *,
-      transactions!inner(*)
+      transactions!inner(*),
+      associations!inner(id,name)
     `)
     .eq('id', challenge_id)
     .eq('user_id', userProfile.id)
@@ -135,7 +138,6 @@ export async function getChallenge(challenge_id: string):Promise<ChallengeWithTr
   if (error) {
     throw new Error("Erreur lors de la récupération du challenge");
   }
-
   const challenge = data?.[0];
   return challenge;
 }

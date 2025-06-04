@@ -8,12 +8,12 @@ import { Loader2, ArrowLeft, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createStripeCheckoutSession } from "@/lib/actions/payment.actions";
-import { Challenge } from "@/types/challenge.types";
+import { ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
 
 
 
 export function PaymentPageClient({ challenge }: {
-    challenge: Challenge
+    challenge: ChallengeWithTransactionAndAssoc
 }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export function PaymentPageClient({ challenge }: {
                         </div>
                         <div>
                             <span className="text-sm font-medium text-gray-500">Association :</span>
-                            <p className="text-gray-900">{challenge.association_name}</p>
+                            <p className="text-gray-900">{challenge.associations.name}</p>
                         </div>
                     </div>
 
@@ -132,7 +132,7 @@ export function PaymentPageClient({ challenge }: {
                     <ul className="text-blue-800 text-sm space-y-1">
                         <li>• Vous payez maintenant pour engager votre motivation</li>
                         <li>• Si vous réussissez votre défi, vous récupérez {netAmount.toFixed(2)}€ (85%)</li>
-                        <li>• Si vous échouez, la somme est versée à {challenge.association_name}</li>
+                        <li>• Si vous échouez, la somme est versée à {challenge.associations.name}</li>
                         <li>• Paiement 100% sécurisé par Stripe</li>
                     </ul>
                 </div>

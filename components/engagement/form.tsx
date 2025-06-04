@@ -49,13 +49,12 @@ import { cn } from "@/lib/utils";
 import { ChallengeFormSchema } from "@/lib/validations/engagement.validations";
 import type { ChallengeFormValues } from "@/lib/validations/engagement.validations";
 import { createChallenge } from "@/lib/actions/engagment.actions";
+import { useAssociations } from "@/hooks/useAssocations";
+import { Association } from "@/types/types";
 
 const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.15);
 
-const associations = Array.from({ length: 10 }, (_, i) => ({
-  id: `assoc_${i + 1}`,
-  name: `Association ${i + 1}`,
-}));
+
 
 export function EngagementForm() {
   const router = useRouter();
@@ -63,6 +62,10 @@ export function EngagementForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalAcceptTerms, setModalAcceptTerms] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const {
+    allAssociations,
+  } = useAssociations();
 
   const form = useForm<ChallengeFormValues>({
     resolver: zodResolver(ChallengeFormSchema),
@@ -103,13 +106,13 @@ export function EngagementForm() {
       setFormError("Veuillez accepter les termes et conditions dans la modale.");
       return;
     }
-    
+
     setIsSubmitting(true);
     setFormError(null);
-    
+
     try {
       const values = form.getValues();
-      
+
       // Utiliser la Server Action pour créer le challenge ET la transaction
       const result = await createChallenge({
         ...values
@@ -197,68 +200,68 @@ export function EngagementForm() {
                 </FormItem>
               )}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
+              <FormField
                 control={form.control}
                 name="duration_days"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel>Durée (jours)</FormLabel>
                     <FormControl>
-                        <Input
+                      <Input
                         type="number"
                         min="1"
                         placeholder="7"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
+                      />
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
+              />
 
-                <FormField
+              <FormField
                 control={form.control}
                 name="start_date"
                 render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                  <FormItem className="flex flex-col">
                     <FormLabel>Date de début</FormLabel>
                     <Popover>
-                        <PopoverTrigger asChild>
+                      <PopoverTrigger asChild>
                         <FormControl>
-                            <Button
+                          <Button
                             variant="outline"
                             className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
                             )}
-                            >
+                          >
                             {field.value ? (
-                                format(field.value, "PPP", { locale: fr })
+                              format(field.value, "PPP", { locale: fr })
                             ) : (
-                                <span>Choisir une date</span>
+                              <span>Choisir une date</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                          </Button>
                         </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() -1))}
-                            initialFocus
-                            locale={fr}
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                          initialFocus
+                          locale={fr}
                         />
-                        </PopoverContent>
+                      </PopoverContent>
                     </Popover>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
+              />
             </div>
 
             <FormField
@@ -274,7 +277,7 @@ export function EngagementForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {associations.map(assoc => (
+                      {allAssociations.map((assoc: Association) => (
                         <SelectItem key={assoc.id} value={assoc.id}>{assoc.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -298,7 +301,7 @@ export function EngagementForm() {
                   </FormControl>
                   <div className="space-y-0.5">
                     <FormLabel htmlFor="allow_ai_usage" className="text-sm font-normal">
-                     {" Autoriser l'utilisation de l'IA pour le suivi (optionnel)"}
+                      {" Autoriser l'utilisation de l'IA pour le suivi (optionnel)"}
                     </FormLabel>
                   </div>
                 </FormItem>
@@ -354,17 +357,17 @@ export function EngagementForm() {
             <DialogTitle>Confirmer la création du défi</DialogTitle>
             <DialogDescription className="text-sm">
               Une fois le paiement validé, <b>{platformCommission.toFixed(2)} €</b> (15%) seront prélevés par la plateforme.
-              {"Le montant reversé à l'association"} <b>{form.getValues("association_id") ? associations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (85%).
+              {"Le montant reversé à l'association"} <b>{form.getValues("association_id") ? allAssociations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (85%).
               <br /><br />
               <strong>Vous serez redirigé vers la page de paiement pour finaliser votre défi.</strong>
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="modal-terms" 
-                checked={modalAcceptTerms} 
-                onCheckedChange={(checked) => setModalAcceptTerms(checked as boolean)} 
+              <Checkbox
+                id="modal-terms"
+                checked={modalAcceptTerms}
+                onCheckedChange={(checked) => setModalAcceptTerms(checked as boolean)}
               />
               <label
                 htmlFor="modal-terms"
@@ -375,16 +378,16 @@ export function EngagementForm() {
             </div>
           </div>
           {formError && isModalOpen && (
-                <Alert variant="destructive" className="mb-4">
-                    <AlertTitle>Erreur</AlertTitle>
-                    <AlertDescription>{formError}</AlertDescription>
-                </Alert>
-            )}
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Erreur</AlertTitle>
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
           <DialogFooter>
             <DialogClose asChild>
-                <Button variant="outline" onClick={() => { setModalAcceptTerms(false); setFormError(null); }}>
-                  Annuler
-                </Button>
+              <Button variant="outline" onClick={() => { setModalAcceptTerms(false); setFormError(null); }}>
+                Annuler
+              </Button>
             </DialogClose>
             <Button onClick={handleFinalSubmit} disabled={!modalAcceptTerms || isSubmitting}>
               {isSubmitting ? (

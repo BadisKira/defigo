@@ -26,7 +26,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Challenge, ChallengeStatus } from "@/types/challenge.types";
+import { ChallengeStatus, ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
+import { useRouter } from "next/navigation";
 
 interface ChallengesTableProps {
   status?: ChallengeStatus;
@@ -35,7 +36,8 @@ interface ChallengesTableProps {
 const LIMIT = 6;
 
 export function ChallengesTable({ status }: ChallengesTableProps) {
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const router = useRouter();
+  const [challenges, setChallenges] = useState<ChallengeWithTransactionAndAssoc[]>([]);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -123,14 +125,14 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
           </TableHeader>
           <TableBody>
             {challenges.map((challenge) => (
-              <TableRow key={challenge.id} className="cursor-pointer hover:bg-muted/50" onClick={() => window.location.href = `/mon-aventure/${challenge.id}`}>
+              <TableRow key={challenge.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/engagement/${challenge.id}`)}>
                 <TableCell className="font-medium">{challenge.title}</TableCell>
                 <TableCell>{challenge.amount}€</TableCell>
-                <TableCell>{challenge.association_name || "Non spécifiée"}</TableCell>
+                <TableCell>{challenge.associations.name || "Non spécifiée"}</TableCell>
                 <TableCell>
                   <div className="text-sm">
                     <div>Début: {formatDate(challenge.start_date)}</div>
-                    <div>Fin: {formatDate(challenge.end_date)}</div>
+                    <div>Fin: {formatDate(challenge.end_date!)}</div>
                   </div>
                 </TableCell>
                 <TableCell>
