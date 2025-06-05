@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -7,9 +6,9 @@ export function HeroSection() {
   return (
     <section className=" md:px-12 px-6 relative min-h-screen flex items-center bg-muted overflow-hidden">
       <div className="container mx-auto px-4 py-20 md:py-32">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="text-left relative z-10">
-            <div className="inline-block bg-primary/10 text-primary rounded-full px-4 py-2 text-sm font-medium mb-6  ">
+        <div className="flex justify-center">
+          <div className="text-center relative z-10 max-w-4xl">
+            <div className="inline-block bg-primary/10 text-primary rounded-full px-4 py-2 text-sm font-medium mb-6">
               🎯 Atteins tes objectifs
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold  mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800">
@@ -18,10 +17,10 @@ export function HeroSection() {
             <p className="text-xl md:text-2xl text-secondary/80 mb-10">
               Défie-toi, engage-toi, aide une asso.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-8 py-6 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-8 py-6 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center gap-2 justify-center"
               >
                 <Link href={"engagement"}>Je lance mon défi</Link>
                 <ArrowRight className="w-5 h-5" />
@@ -34,13 +33,13 @@ export function HeroSection() {
                 En savoir plus
               </Button>
             </div>
-            <div className="mt-12 flex items-center gap-8">
+            <div className="mt-12 flex items-center gap-8 justify-center">
               <div>
-                <p className="text-3xl font-bold text-secondary">10k+</p>
+                <p className="text-3xl font-bold text-secondary">1+</p>
                 <p className="text-sm text-secondary/70">Défis relevés</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-secondary">50k€+</p>
+                <p className="text-3xl font-bold text-secondary">10€+</p>
                 <p className="text-sm text-secondary/70">Reversés aux assos</p>
               </div>
               <div>
@@ -48,16 +47,6 @@ export function HeroSection() {
                 <p className="text-sm text-secondary/70">Taux de réussite</p>
               </div>
             </div>
-          </div>
-          <div className="relative h-[500px] hidden md:block">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl"></div>
-            <Image
-              src="https://images.pexels.com/photos/3228833/pexels-photo-3228833.jpeg"
-              alt="Success Illustration"
-              fill
-              className="object-cover rounded-3xl"
-              priority
-            />
           </div>
         </div>
       </div>

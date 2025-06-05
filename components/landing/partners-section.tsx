@@ -26,23 +26,21 @@ export async function PartnersSection() {
       <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-r from-green-200/30 to-teal-200/30 rounded-full blur-xl animate-pulse delay-500"></div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-16">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2 text-blue-600 font-medium">
-              <Users className="w-5 h-5" />
-              <span className="text-sm uppercase tracking-wider">Nos partenaires</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight">
-              Associations qui nous font confiance
-            </h2>
-            <p className="text-gray-600 max-w-md">
-              Découvrez les associations partenaires qui collaborent avec nous pour créer un impact positif dans la communauté.
-            </p>
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center space-x-2 text-blue-600 font-medium mb-4">
+            <Users className="w-5 h-5" />
+            <span className="text-sm uppercase tracking-wider">Nos partenaires</span>
           </div>
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent leading-tight mb-4">
+            Associations qui nous font confiance
+          </h2>
+          <p className="text-gray-600 max-w-md mx-auto mb-6">
+            Découvrez les associations partenaires qui collaborent avec nous pour créer un impact positif dans la communauté.
+          </p>
           
           <Button 
             asChild 
-            className="mt-6 md:mt-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-6 py-3 rounded-full"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-6 py-3 rounded-full"
           >
             <Link href="/associations" className="flex items-center space-x-2">
               <span>Voir toutes</span>
@@ -118,7 +116,7 @@ export async function PartnersSection() {
           <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/50">
             <span className="text-gray-600">Plus de</span>
             <span className="font-bold text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              100+
+              20+
             </span>
             <span className="text-gray-600">associations partenaires</span>
           </div>

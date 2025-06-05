@@ -43,12 +43,14 @@ const steps: Step[] = [
   },
   {
     id: "step-4",
-    title: "Prouve ta réussite ou laisse la mise à l'asso",
+    title: "Déclare le résultat",
     description:
-      "À la fin de ton défi, télécharge les preuves de ta réussite. Si tu as atteint ton objectif, tu récupères ta mise. Sinon, l'association reçoit ton don !",
+      "À la fin du défi, indique simplement si tu as réussi ou non. Si tu déclares ta réussite, tu récupères ta mise moins la commission de la plateforme (3 %). Sinon, l’association reçoit ton don. Pas besoin d’uploader de preuve , tu es seul juge !",
     icon: <Award className="h-6 w-6 text-white" />,
     gradient: "from-purple-500 to-indigo-500",
-  },
+  }
+
+
 ];
 
 export function HowItWorksSection() {
@@ -58,7 +60,7 @@ export function HowItWorksSection() {
       <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-r from-blue-200/20 to-purple-200/20 rounded-full blur-xl animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-gradient-to-r from-pink-200/20 to-orange-200/20 rounded-full blur-xl animate-pulse delay-1000"></div>
       <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-r from-green-200/20 to-teal-200/20 rounded-full blur-xl animate-pulse delay-500"></div>
-      
+
       <div className="container mx-auto px-4 relative z-10">
         {/* En-tête avec style modernisé */}
         <div className="text-center mb-16 space-y-4">
@@ -81,7 +83,7 @@ export function HowItWorksSection() {
                 key={step.id}
                 value={step.id}
                 className="group mb-6 border-0 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 overflow-hidden"
-                
+
               >
                 <AccordionTrigger className="px-8 py-6 hover:no-underline hover:bg-gray-50/50 [&[data-state=open]]:bg-gradient-to-r [&[data-state=open]]:from-blue-50/50 [&[data-state=open]]:to-purple-50/50">
                   <div className="flex items-center w-full">
@@ -95,9 +97,9 @@ export function HowItWorksSection() {
                         <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md">
                           {index + 1}
                         </div>
-                       </div>
+                      </div>
                     </div>
-                    
+
                     {/* Contenu */}
                     <div className="flex-1 text-left">
                       <h3 className="text-xl md:text-2xl font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">
@@ -106,7 +108,7 @@ export function HowItWorksSection() {
                     </div>
                   </div>
                 </AccordionTrigger>
-                
+
                 <AccordionContent className="px-8 pt-2 pb-6">
                   <div className="ml-20 md:ml-20">
                     <p className="text-gray-700 text-lg leading-relaxed">
