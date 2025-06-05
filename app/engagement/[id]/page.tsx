@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Calendar, Euro, Trophy, XCircle } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { ChallengeStatus } from "@/types/challenge.types";
+import { ButtonHandlePaiement } from "@/components/payment/payementPageClient";
 
 export const metadata: Metadata = {
   title: "Détails du Challenge | Bet Yourself",
@@ -31,9 +32,11 @@ const formatDate = (dateString: string) => {
 
 const getStatusBadge = (status: ChallengeStatus) => {
   const statusConfig = {
+    draft: { label: "Brouillon", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
     pending: { label: "En cours", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
-    success: { label: "Réussi", variant: "default", icon: <Trophy className="h-3 w-3" /> },
+    validated: { label: "Réussi", variant: "default", icon: <Trophy className="h-3 w-3" /> },
     failed: { label: "Échoué", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
+    expired: { label: "Expiré ", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
   };
 
   const config = statusConfig[status];
@@ -99,7 +102,7 @@ export default async function ChallengeDetailsPage({
 
 
   const isPending = challenge.status === "pending";
-  const isSuccess = challenge.status === "success";
+  const isSuccess = challenge.status === "validated";
   const isFailed = challenge.status === "failed";
 
   return (
@@ -132,6 +135,7 @@ export default async function ChallengeDetailsPage({
               {challenge.amount}€
             </div>
           </div>
+          {challenge.status == "draft" || challenge.status === "failed" &&  <ButtonHandlePaiement challenge={challenge} />}
         </CardHeader>
 
         <CardContent className="pb-6">
@@ -234,7 +238,7 @@ export default async function ChallengeDetailsPage({
 
                     <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
                       <Trophy className="mr-2 h-4 w-4" />
-                     {" Valider ma réussite"}
+                      {" Valider ma réussite"}
                     </Button>
                   </form>
                 </CardContent>
@@ -244,7 +248,7 @@ export default async function ChallengeDetailsPage({
                 <CardHeader className="bg-red-50/50 dark:bg-red-950/10 border-b border-red-100 dark:border-red-900/20">
                   <CardTitle className="flex items-center gap-2">
                     <XCircle className="h-5 w-5 text-red-500" />
-                   {" Je n'ai pas réussi mon challenge"}
+                    {" Je n'ai pas réussi mon challenge"}
                   </CardTitle>
                   <CardDescription>
                     {"Pas de souci, votre mise sera reversée à l'association que vous avez choisie."}

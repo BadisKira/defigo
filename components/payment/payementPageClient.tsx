@@ -15,37 +15,11 @@ import { ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
 export function PaymentPageClient({ challenge }: {
     challenge: ChallengeWithTransactionAndAssoc
 }) {
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, ] = useState<string | null>(null);
     const router = useRouter();
 
     const commission = challenge.amount * 0.15;
     const netAmount = challenge.amount - commission;
-
-
-    const handlePayment = async () => {
-        try {
-            setIsProcessing(true);
-            setError(null);
-
-            const result = await createStripeCheckoutSession({
-                challengeId: challenge.id,
-                amount: challenge.amount,
-            });
-
-            if (result.success && result.checkoutUrl) {
-                window.location.href = result.checkoutUrl;
-            } else {
-                throw new Error(result.error || "Erreur lors de la création de la session de paiement");
-            }
-
-        } catch (err) {
-            console.error("Erreur paiement:", err);
-            setError(err instanceof Error ? err.message : "Erreur lors du paiement");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-gray-50 py-12">
@@ -138,7 +112,48 @@ export function PaymentPageClient({ challenge }: {
                 </div>
 
                 {/* Button de paiement */}
-                <Button
+                <ButtonHandlePaiement challenge={challenge} />
+
+                {/* Footer sécurité */}
+                <div className="text-center mt-6">
+                    <div className="flex items-center justify-center text-sm text-gray-500">
+                        <Shield className="h-4 w-4 mr-1" />
+                        Paiement sécurisé par Stripe • Vos données sont protégées
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export const ButtonHandlePaiement = ({challenge}: {challenge:ChallengeWithTransactionAndAssoc}) => {
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [, setError] = useState<string | null>(null);
+    const handlePayment = async () => {
+        try {
+            setIsProcessing(true);
+            setError(null);
+
+            const result = await createStripeCheckoutSession({
+                challengeId: challenge.id,
+                amount: challenge.amount,
+            });
+
+            if (result.success && result.checkoutUrl) {
+                window.location.href = result.checkoutUrl;
+            } else {
+                throw new Error(result.error || "Erreur lors de la création de la session de paiement");
+            }
+
+        } catch (err) {
+            console.error("Erreur paiement:", err);
+            setError(err instanceof Error ? err.message : "Erreur lors du paiement");
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+    return (
+         <Button
                     onClick={handlePayment}
                     disabled={isProcessing}
                     size="lg"
@@ -156,15 +171,5 @@ export function PaymentPageClient({ challenge }: {
                         </>
                     )}
                 </Button>
-
-                {/* Footer sécurité */}
-                <div className="text-center mt-6">
-                    <div className="flex items-center justify-center text-sm text-gray-500">
-                        <Shield className="h-4 w-4 mr-1" />
-                        Paiement sécurisé par Stripe • Vos données sont protégées
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+    )
 }

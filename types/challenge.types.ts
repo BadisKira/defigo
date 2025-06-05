@@ -1,7 +1,19 @@
 import { Transaction } from "./transaction.types";
 import { Association } from "./types";
 
-export type ChallengeStatus =  'pending' | 'success' | 'failed';
+export type ChallengeStatus =
+  | "draft"
+  | "pending"
+  | "validated"
+  | "failed"
+  | "expired";
+
+
+  export type StripePaymentStatus =
+  | "pending"
+  | "succeeded"
+  | "failed"
+  | "refunded";
 
 
 export interface Challenge {
@@ -9,6 +21,7 @@ export interface Challenge {
   association_id?: string;
   feedback_id?: string;
   user_id?: string;
+  clerk_user_id?:string;
   title: string;
   description?: string;
   amount: number; // <= 500
@@ -17,7 +30,7 @@ export interface Challenge {
   end_date?: string;
   status: ChallengeStatus; // 'pending' par défaut
   created_at: string;
-  stripe_payment_status: string; // 'pending' par défaut
+  stripe_payment_status: StripePaymentStatus; // 'pending' par défaut
 }
 
 

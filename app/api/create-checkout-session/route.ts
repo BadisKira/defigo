@@ -7,7 +7,7 @@ import {
   calculateCommission,
   checkRateLimit
 } from '@/lib/stripe/stripe-security';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 
 
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Challenge non trouvé' }, { status: 404 });
     }
 
-    const supabase = createSupabaseClient();
+    const supabase = createServiceRoleSupabaseClient();
     // 5. Vérifier paiement existant
     const { data: existingPayment } = await supabase
       .from('transactions')
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // 8. URL de base moderne
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      : "https://82ee-109-14-129-172.ngrok-free.app" //process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     // 9. Création session Stripe avec API moderne
     const session = await stripe.checkout.sessions.create({
@@ -101,40 +101,19 @@ export async function POST(request: NextRequest) {
         net_amount: netAmount.toString(),
         commission: commission.toString(),
       },
+      payment_intent_data: {
+        metadata: {
+          challenge_id: challengeId,
+          user_id: userId,
+          transaction_id:challengeId,
+        },
+      },
       // Sécurité renforcée
       billing_address_collection: 'required',
       phone_number_collection: { enabled: true },
       customer_creation: 'always',
       invoice_creation: { enabled: true },
     });
-
-    // 10. Transaction en base
-    const { error: insertError } = await supabase
-      .from('transactions')
-      .insert({
-        challenge_id: challengeId,
-        clerk_user_id: userId,
-        stripe_payment_id: session.payment_intent,
-        stripe_session_id: session.id,
-        amount: amount,
-        commission: commission,
-        status: 'pending',
-        payment_type: 'engagement'
-      });
-
-    if (insertError) {
-      console.error('Erreur insertion transaction:', insertError);
-      return Response.json(
-        { error: 'Erreur création paiement' },
-        { status: 500 }
-      );
-    }
-
-    // 11. Mise à jour challenge
-    await supabase
-      .from('challenges')
-      .update({ stripe_payment_status: 'processing' })
-      .eq('id', challengeId);
 
     return Response.json({
       url: session.url,

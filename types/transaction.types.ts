@@ -1,5 +1,11 @@
-export type TransactionStatus = 'initiated' | 'paid' | 'refunded' | 'donated';
-export type PaymentType = 'one-time';
+export type TransactionStatus =
+  | "initiated"
+  | "paid"
+  | "refunded"
+  | "donated";
+  
+export type PaymentType = "one-time";
+
 
 export type Transaction = {
   id: string;

@@ -26,37 +26,26 @@ export async function createStripeCheckoutSession({
         }
 
         const supabase = await createSupabaseClient();
-        const { data: userProfile, error: profileError } = await supabase
-            .from("user_profiles")
-            .select("id")
-            .eq("clerk_user_id", userId)
-            .single();
-
-        if (profileError) {
-            throw new Error("Erreur lors de la récupération du profil utilisateur depuis la base de données.");
-        }
-        if (!userProfile) {
-            throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
-        }
+       
 
         const { data, error: getChallengeError } = await supabase
             .from("challenges")
             .select("*")
             .eq("id", challengeId)
-            .eq("user_id", userProfile.id)
-            .eq("status", "pending")
+            .eq("clerk_user_id", userId)
+            .in("status", ["draft",'failed'])
             .single();
-
 
         const challenge = data as Challenge;
 
         if (!challenge) {
-            return { success: false, error: "Défi non trouvé" };
+            return { success: false, error: "Défi non trouvé ou déja payé" };
         }
 
         if (getChallengeError) {
             throw new Error(getChallengeError.message);
         }
+
         // Créer la session Stripe
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -77,17 +66,16 @@ export async function createStripeCheckoutSession({
             success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/engagement/${challengeId}/payment`,
             metadata: {
-                challengeId,
-                userId,
+                challenge_id: challengeId, 
+                user_id: userId,
             },
         });
 
         await supabase
-            .from('transaction')
-            .update({ stripe_session_id: session.id })
+            .from('transactions')
+            .update({ stripe_session_id: session.id  })
             .eq('challenge_id', challengeId)
             .eq('status', 'initiated');
-
 
         return {
             success: true,

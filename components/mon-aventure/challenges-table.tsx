@@ -70,12 +70,16 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
 
   const getStatusBadge = (status: ChallengeStatus) => {
     switch (status) {
+      case "draft":
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Brouillon</Badge>;
       case "pending":
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">En cours</Badge>;
-      case "success":
+      case "validated":
         return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Réussi</Badge>;
       case "failed":
         return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Échoué</Badge>;
+      case "expired":
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Éxpiré</Badge>;  
       default:
         return <Badge variant="outline">Inconnu</Badge>;
     }
@@ -195,12 +199,16 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
 
 function getStatusLabel(status: ChallengeStatus): string {
   switch (status) {
+    case "draft":
+        return "brouillon"
     case "pending":
       return "en cours";
-    case "success":
+    case "validated":
       return "réussis";
     case "failed":
       return "échoués";
+    case "expired":
+      return "expiré"
     default:
       return "";
   }

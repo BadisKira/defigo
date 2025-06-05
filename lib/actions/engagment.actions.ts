@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 
 import { ChallengeFormValues } from "../validations/engagement.validations";
 import { createSupabaseClient } from "../supabase";
-import { ChallengeActionResult, ChallengeStatus,ChallengeWithTransactionAndAssoc, CreateChallengeResult } from "@/types/challenge.types";
+import { ChallengeActionResult, ChallengeStatus, ChallengeWithTransactionAndAssoc, CreateChallengeResult } from "@/types/challenge.types";
 import { Transaction } from "@/types/transaction.types";
 
 
@@ -18,7 +18,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
   }
 
   const supabase = await createSupabaseClient();
-  
+
   try {
     // Récupération du profil utilisateur
     const { data: userProfile, error: profileError } = await supabase
@@ -27,7 +27,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
       .eq("clerk_user_id", authUserId)
       .single();
 
-      
+
 
     if (profileError || !userProfile) {
       throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
@@ -37,16 +37,17 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
     const dbUserId = userProfile.id;
     const commissionRate = Number(process.env.COMMISSION_RATE || 0.15);
     const currentTimestamp = new Date().toISOString();
-    
+
     const challengeData = {
       user_id: dbUserId,
       title: values.title,
       description: values.description,
+      clerk_user_id: authUserId,
       amount: values.amount,
       duration_days: values.duration_days,
       start_date: values.start_date.toISOString(),
       association_id: values.association_id,
-      status: "pending" as const,
+      status: 'draft' as const,
     };
 
     // Création du défi
@@ -63,7 +64,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
     // Création de la transaction associée
     const transactionData: Partial<Transaction> = {
       challenge_id: challenge.id,
-      clerk_user_id: authUserId,
+      clerk_user_id: authUserId as string,
       amount: values.amount,
       commission: values.amount * commissionRate,
       status: 'initiated',
@@ -91,7 +92,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
   } catch (error: unknown) {
     // Log l'erreur pour le debugging
     console.error('Erreur lors de la création du défi:', error);
-    
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "Une erreur a survenu lors de la création de l'engagement",
@@ -101,26 +102,13 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
 
 
-export async function getChallenge(challenge_id: string):Promise<ChallengeWithTransactionAndAssoc> {
+export async function getChallenge(challenge_id: string): Promise<ChallengeWithTransactionAndAssoc> {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Vous devez être connecté");
   }
 
   const supabase = await createSupabaseClient();
-  const { data: userProfile, error: profileError } = await supabase
-    .from("user_profiles")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .single();
-
-  if (profileError) {
-    throw new Error("Erreur lors de la récupération du profil utilisateur depuis la base de données.");
-  }
-  if (!userProfile) {
-    throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
-  }
-
 
   const { data, error } = await supabase
     .from('challenges')
@@ -130,9 +118,7 @@ export async function getChallenge(challenge_id: string):Promise<ChallengeWithTr
       associations!inner(id,name)
     `)
     .eq('id', challenge_id)
-    .eq('user_id', userProfile.id)
-    .eq('status', 'pending')
-    .filter('transactions.status', 'eq', 'initiated') 
+    .eq('clerk_user_id', userId)
     .limit(1);
 
   if (error) {
@@ -161,27 +147,12 @@ export async function markChallengeAsSuccessful(
 
     const supabase = await createSupabaseClient();
 
-    // Récupérer le profil utilisateur
-    const { data: userProfile, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("clerk_user_id", userId)
-      .single();
-
-    if (profileError || !userProfile) {
-      return {
-        success: false,
-        message: "Erreur lors de la récupération du profil utilisateur",
-        error: profileError?.message
-      };
-    }
-
     // Vérifier que le challenge existe, appartient à l'utilisateur et est en attente
     const { data: challenge, error: challengeError } = await supabase
       .from('challenges')
       .select('*')
       .eq('id', challengeId)
-      .eq('user_id', userProfile.id)
+      .eq('clerk_user_id', userId)
       .eq('status', 'pending')
       .single();
 
@@ -266,27 +237,13 @@ export async function markChallengeAsFailed(
 
     const supabase = await createSupabaseClient();
 
-    // Récupérer le profil utilisateur
-    const { data: userProfile, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("clerk_user_id", userId)
-      .single();
-
-    if (profileError || !userProfile) {
-      return {
-        success: false,
-        message: "Erreur lors de la récupération du profil utilisateur",
-        error: profileError?.message
-      };
-    }
 
     // Récupérer le challenge pour vérification
     const { data: challenge, error: challengeError } = await supabase
       .from('challenges')
       .select('*')
       .eq('id', challengeId)
-      .eq('user_id', userProfile.id)
+      .eq('clerk_user_id', userId)
       .eq('status', 'pending')
       .single();
 

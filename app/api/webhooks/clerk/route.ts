@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { WebhookEvent } from '@clerk/nextjs/server';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { headers } from 'next/headers';
 
 export async function POST(req: Request) {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
   const { id } = evt.data;
   const eventType = evt.type;
-  const supabase = createSupabaseClient();
+  const supabase = createServiceRoleSupabaseClient();
 
   // Traiter les différents types d'événements
   switch (eventType) {
@@ -89,21 +89,6 @@ export async function POST(req: Request) {
 
       if (error) {
         console.error('Error updating user profile:', error);
-        return NextResponse.json({ error: 'Database error' }, { status: 500 });
-      }
-      break;
-    }
-    case 'user.deleted': {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          is_deleted: true,
-          deleted_at: new Date().toISOString(),
-        })
-        .eq('clerk_user_id', id);
-
-      if (error) {
-        console.error('Error handling user deletion:', error);
         return NextResponse.json({ error: 'Database error' }, { status: 500 });
       }
       break;

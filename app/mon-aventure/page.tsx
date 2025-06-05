@@ -32,32 +32,46 @@ export default async function MonAventurePage() {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="all">Tous les défis</TabsTrigger>
+            <TabsTrigger value="draft">Brouillons</TabsTrigger>
             <TabsTrigger value="pending">En cours</TabsTrigger>
             <TabsTrigger value="success">Réussis</TabsTrigger>
             <TabsTrigger value="failed">Échoués</TabsTrigger>
+            <TabsTrigger value="expired">Éxpirés</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="all">
             <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
               <ChallengesTable status={undefined} />
             </Suspense>
           </TabsContent>
-          
+
+          <TabsContent value="draft">
+            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+              <ChallengesTable status="draft" />
+            </Suspense>
+          </TabsContent>
+
           <TabsContent value="pending">
             <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
               <ChallengesTable status="pending" />
             </Suspense>
           </TabsContent>
-          
+
           <TabsContent value="success">
             <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-              <ChallengesTable status="success" />
+              <ChallengesTable status="validated" />
             </Suspense>
           </TabsContent>
-          
+
           <TabsContent value="failed">
             <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
               <ChallengesTable status="failed" />
+            </Suspense>
+          </TabsContent>
+
+          <TabsContent value="expired">
+            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+              <ChallengesTable status="expired" />
             </Suspense>
           </TabsContent>
         </Tabs>
