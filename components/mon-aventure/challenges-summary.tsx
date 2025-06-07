@@ -10,7 +10,7 @@ export function ChallengesSummary({ summary }: ChallengesSummaryProps) {
   const {
     totalChallenges,
     successfulChallenges,
-    pendingChallenges,
+    activeChallenges,
     totalDonated,
   } = summary;
 
@@ -50,7 +50,7 @@ export function ChallengesSummary({ summary }: ChallengesSummaryProps) {
           <Target className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{pendingChallenges}</div>
+          <div className="text-2xl font-bold">{activeChallenges}</div>
           <p className="text-xs text-muted-foreground">
             Défis actifs à compléter
           </p>

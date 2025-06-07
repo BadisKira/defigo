@@ -33,7 +33,7 @@ export default async function MonAventurePage() {
           <TabsList className="mb-4">
             <TabsTrigger value="all">Tous les défis</TabsTrigger>
             <TabsTrigger value="draft">Brouillons</TabsTrigger>
-            <TabsTrigger value="pending">En cours</TabsTrigger>
+            <TabsTrigger value="active">En cours</TabsTrigger>
             <TabsTrigger value="success">Réussis</TabsTrigger>
             <TabsTrigger value="failed">Échoués</TabsTrigger>
             <TabsTrigger value="expired">Éxpirés</TabsTrigger>
@@ -51,9 +51,9 @@ export default async function MonAventurePage() {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="pending">
+          <TabsContent value="active">
             <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-              <ChallengesTable status="pending" />
+              <ChallengesTable status="active" />
             </Suspense>
           </TabsContent>
 

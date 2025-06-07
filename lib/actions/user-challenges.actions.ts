@@ -15,7 +15,7 @@ export interface UserChallengesSummary {
   totalChallenges: number;
   successfulChallenges: number;
   failedChallenges: number;
-  pendingChallenges: number;
+  activeChallenges: number;
   totalDonated: number;
   associationsDonatedTo: Array<{
     id: string;
@@ -99,21 +99,13 @@ export async function getUserChallengesSummary() {
   }
 
   const supabase = await createSupabaseClient();
-  const { data: userProfile, error: profileError } = await supabase
-    .from("user_profiles")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .single();
-
-  if (profileError || !userProfile) {
-    throw new Error("Erreur lors de la récupération du profil utilisateur");
-  }
+  
 
   // Récupérer les statistiques des défis
   const { data: stats, error: statsError } = await supabase
     .from("challenges")
     .select("status, amount")
-    .eq("user_id", userProfile.id);
+    .eq("clerk_user_id", userId);
 
   if (statsError) {
     throw new Error("Erreur lors de la récupération des statistiques");
@@ -124,7 +116,7 @@ export async function getUserChallengesSummary() {
     .from("challenges")
     .select(`amount,
       associations(id,name) `)
-    .eq("user_id", userProfile.id)
+    .eq("clerk_user_id", userId)
     .eq("status", "failed");
 
   if (donationsError) {
@@ -135,11 +127,10 @@ export async function getUserChallengesSummary() {
   const totalChallenges = stats.length;
   const successfulChallenges = stats.filter(c => c.status === "success").length;
   const failedChallenges = stats.filter(c => c.status === "failed").length;
-  const pendingChallenges = stats.filter(c => c.status === "pending").length;
+  const activeChallenges = stats.filter(c => c.status === "active").length;
 
-  // Calculer le montant total donné (15% de commission déduite)
   const totalDonated = donations.reduce((sum, challenge) => {
-    const donationAmount = challenge.amount * 0.85; // 85% du montant va à l'association
+    const donationAmount = challenge.amount; 
     return sum + donationAmount;
   }, 0);
 
@@ -169,8 +160,8 @@ export async function getUserChallengesSummary() {
     totalChallenges,
     successfulChallenges,
     failedChallenges,
-    pendingChallenges,
-    totalDonated,
+    activeChallenges,
+    totalDonated : totalDonated * (100 - Number(process.env.COMMISSION_RATE!)) as number ,
     associationsDonatedTo: Array.from(associationMap.values()),
   };
 }

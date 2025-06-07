@@ -18,7 +18,7 @@ export function PaymentPageClient({ challenge }: {
     const [error, ] = useState<string | null>(null);
     const router = useRouter();
 
-    const commission = challenge.amount * 0.15;
+    const commission = challenge.amount * 0.04;
     const netAmount = challenge.amount - commission;
 
     return (
@@ -87,7 +87,7 @@ export function PaymentPageClient({ challenge }: {
                             <span className="font-semibold">{challenge.amount}€</span>
                         </div>
                         <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
-                            <span>Commission plateforme (15%) :</span>
+                            <span>Commission plateforme (4%) :</span>
                             <span>{commission.toFixed(2)}€</span>
                         </div>
                         <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
@@ -105,7 +105,7 @@ export function PaymentPageClient({ challenge }: {
                     </h3>
                     <ul className="text-blue-800 text-sm space-y-1">
                         <li>• Vous payez maintenant pour engager votre motivation</li>
-                        <li>• Si vous réussissez votre défi, vous récupérez {netAmount.toFixed(2)}€ (85%)</li>
+                        <li>• Si vous réussissez votre défi, vous récupérez {netAmount.toFixed(2)}€ (96%)</li>
                         <li>• Si vous échouez, la somme est versée à {challenge.associations.name}</li>
                         <li>• Paiement 100% sécurisé par Stripe</li>
                     </ul>

@@ -80,3 +80,23 @@
     @apply font-inter;
   }
 }
+
+@keyframes pulse-line {
+  0%, 100% {
+      stroke-width: 2;
+      opacity: 0.4;
+  }
+  50% {
+      stroke-width: 3;
+      opacity: 0.7;
+  }
+}
+
+.animate-pulse-line {
+  animation: pulse-line 2s ease-in-out infinite;
+}
+
+.animate-pulse-line-delayed {
+  animation: pulse-line 2.5s ease-in-out infinite;
+  animation-delay: 0.5s;
+}

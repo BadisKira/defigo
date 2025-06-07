@@ -37,7 +37,7 @@ const steps: Step[] = [
     id: "step-3",
     title: "Dépose ta mise",
     description:
-      "Détermine le montant que tu souhaites engager. Plus la somme est importante, plus ta motivation sera grande. Tu peux miser de 10€ à 1000€.",
+      "Détermine le montant que tu souhaites engager. Plus la somme est importante, plus ta motivation sera grande. Tu peux miser de 10€ à 500€.",
     icon: <PiggyBank className="h-6 w-6 text-white" />,
     gradient: "from-emerald-500 to-green-500",
   },
@@ -45,7 +45,7 @@ const steps: Step[] = [
     id: "step-4",
     title: "Déclare le résultat",
     description:
-      "À la fin du défi, indique simplement si tu as réussi ou non. Si tu déclares ta réussite, tu récupères ta mise moins la commission de la plateforme (3 %). Sinon, l’association reçoit ton don. Pas besoin d’uploader de preuve , tu es seul juge !",
+      "À la fin du défi, indique simplement si tu as réussi ou non. Si tu déclares ta réussite, tu récupères ta mise moins la commission de la plateforme (4%). Sinon, l’association reçoit ton don. Pas besoin d’uploader de preuve , tu es seul juge !",
     icon: <Award className="h-6 w-6 text-white" />,
     gradient: "from-purple-500 to-indigo-500",
   }

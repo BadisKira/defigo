@@ -3,7 +3,7 @@ import { PaymentType, TransactionStatus } from "./transaction.types";
 
 export const challengeStatusFr: Record<ChallengeStatus, string> = {
   draft: "Brouillon",
-  pending: "En cours",
+  active: "En cours",
   validated: "Validé",
   failed: "Échoué",
   expired: "Expiré"

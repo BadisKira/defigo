@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Schéma de validation pour le formulaire d'engagement
 export const ChallengeFormSchema = z.object({
   title: z.string().min(1, { message: "Le titre est requis" }),
   description: z.string().min(1, { message: "La description est requise" }),
@@ -14,5 +13,24 @@ export const ChallengeFormSchema = z.object({
   }),
 });
 
-// Type pour les données du formulaire
 export type ChallengeFormValues = z.infer<typeof ChallengeFormSchema>;
+
+
+export const markChallengeSchema = z.object({
+  challengeId: z.string().uuid('Format UUID invalide'),
+  accomplishmentNote: z.string().max(500, 'Note trop longue (max 500 caractères)').optional(),
+  rating: z.number().int().min(1).max(5, 'La note doit être entre 1 et 5').optional(),
+  donateToAssociation: z.boolean().default(false)
+});
+
+
+export const markChallengeFailedSchema = z.object({
+  challengeId: z.string().uuid('Format UUID invalide'),
+  failureNote: z.string()
+    .max(500, 'Note d\'échec trop longue (max 500 caractères)')
+    .optional()
+    .transform(val => val?.trim() || undefined),
+  rating: z.number().int().min(1).max(5, 'La note doit être entre 1 et 5').optional(),
+  donateToAssociation: z.boolean().default(false)
+});
+

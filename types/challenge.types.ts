@@ -1,9 +1,10 @@
-import { Transaction } from "./transaction.types";
+import { ChallengeFeedback } from "./challenge_feedback.types";
+import { Transaction, TransactionStatus } from "./transaction.types";
 import { Association } from "./types";
 
 export type ChallengeStatus =
   | "draft"
-  | "pending"
+  | "active"
   | "validated"
   | "failed"
   | "expired";
@@ -28,19 +29,23 @@ export interface Challenge {
   duration_days: number;
   start_date: string;
   end_date?: string;
-  status: ChallengeStatus; // 'pending' par défaut
+  status: ChallengeStatus; 
   created_at: string;
-  stripe_payment_status: StripePaymentStatus; // 'pending' par défaut
+  stripe_payment_status: StripePaymentStatus; 
 }
 
 
 // autres types used in actions 
 export interface ChallengeWithTransaction extends Challenge {
-  transaction?: Transaction;
+  transactions: Transaction;
 }
 
 export interface ChallengeWithTransactionAndAssoc extends ChallengeWithTransaction {
   associations:Partial<Association>
+}
+
+export interface ChallengeWithTransactionAndAssocAndFeedback extends ChallengeWithTransactionAndAssoc {
+  challenge_feedbacks:Partial<ChallengeFeedback>
 }
 
 export interface GetChallengeResult {
@@ -59,4 +64,33 @@ export interface ChallengeActionResult {
   success: boolean;
   message: string;
   error?: string;
+}
+
+
+export interface ChallengeActionResult {
+  success: boolean;
+  message: string;
+  error?: string;
+  data?: {
+    challengeId: string;
+    newStatus: ChallengeStatus;
+    transactionStatus: TransactionStatus;
+    refundAmount?: number;
+    donationAmount?: number;
+
+  };
+}
+
+
+export interface MarkChallengeAsSuccessfulParams {
+  challengeId: string;
+  accomplishmentNote?: string;
+  rating?: number; 
+  donateToAssociation?: boolean;
+}
+
+
+export interface MarkChallengeAsFailedParams {
+  challengeId: string;
+  failureNote?: string;
 }

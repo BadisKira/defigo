@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       .select('stripe_session_id, status')
       .eq('challenge_id', challengeId)
       .eq('clerk_user_id', userId)
-      .in('status', ['pending', 'completed'])
+      .in('status', ['pending', 'paid'])
       .maybeSingle(); // Utilise maybeSingle() au lieu de single()
 
     if (existingPayment) {

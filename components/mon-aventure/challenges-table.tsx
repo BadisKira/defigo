@@ -72,7 +72,7 @@ export function ChallengesTable({ status }: ChallengesTableProps) {
     switch (status) {
       case "draft":
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Brouillon</Badge>;
-      case "pending":
+      case "active":
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">En cours</Badge>;
       case "validated":
         return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Réussi</Badge>;
@@ -201,7 +201,7 @@ function getStatusLabel(status: ChallengeStatus): string {
   switch (status) {
     case "draft":
         return "brouillon"
-    case "pending":
+    case "active":
       return "en cours";
     case "validated":
       return "réussis";

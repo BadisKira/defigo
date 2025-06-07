@@ -18,7 +18,7 @@ export function Footer() {
               <h3 className="font-semibold text-lg mb-2">Liens utiles</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+                  <Link href="#" className="text-gray-300 hover:text-white transition-colors ">
                     À propos
                   </Link>
                 </li>
@@ -59,7 +59,7 @@ export function Footer() {
         </div>
         
         <div className="mt-12 pt-6 border-t border-gray-700 text-center text-gray-400">
-          <p>© {new Date().getFullYear()} Bet Yourself. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} DéfiGo . Tous droits réservés.</p>
         </div>
       </div>
     </footer>

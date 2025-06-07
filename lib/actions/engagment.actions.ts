@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 
-import { ChallengeFormValues } from "../validations/engagement.validations";
+import { ChallengeFormValues, markChallengeFailedSchema, markChallengeSchema } from "../validations/engagement.validations";
 import { createSupabaseClient } from "../supabase";
-import { ChallengeActionResult, ChallengeStatus, ChallengeWithTransactionAndAssoc, CreateChallengeResult } from "@/types/challenge.types";
-import { Transaction } from "@/types/transaction.types";
+import { ChallengeActionResult,  ChallengeWithTransactionAndAssocAndFeedback, CreateChallengeResult, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
+import { Transaction, TransactionStatus } from "@/types/transaction.types";
+import { z } from "zod";
 
 
 
@@ -35,7 +36,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
     // Préparation des données
     const dbUserId = userProfile.id;
-    const commissionRate = Number(process.env.COMMISSION_RATE || 0.15);
+    const commissionRate = Number(process.env.COMMISSION_RATE || 0.04);
     const currentTimestamp = new Date().toISOString();
 
     const challengeData = {
@@ -102,7 +103,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
 
 
-export async function getChallenge(challenge_id: string): Promise<ChallengeWithTransactionAndAssoc> {
+export async function getChallenge(challenge_id: string): Promise<ChallengeWithTransactionAndAssocAndFeedback> {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Vous devez être connecté");
@@ -115,7 +116,8 @@ export async function getChallenge(challenge_id: string): Promise<ChallengeWithT
     .select(`
       *,
       transactions!inner(*),
-      associations!inner(id,name)
+      associations!inner(id,name),
+      challenge_feedbacks (*)
     `)
     .eq('id', challenge_id)
     .eq('clerk_user_id', userId)
@@ -128,179 +130,264 @@ export async function getChallenge(challenge_id: string): Promise<ChallengeWithT
   return challenge;
 }
 
-export interface MarkChallengeAsSuccessfulParams {
-  challengeId: string;
-  accomplishmentNote?: string;
-  donateToAssociation?: boolean;
-}
 
 export async function markChallengeAsSuccessful(
   params: MarkChallengeAsSuccessfulParams
 ): Promise<ChallengeActionResult> {
-  const { challengeId, accomplishmentNote, donateToAssociation = false } = params;
-
   try {
+    const validatedParams = markChallengeSchema.parse(params);
+    const { challengeId, accomplishmentNote, rating, donateToAssociation } = validatedParams;
+
+    
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, message: "Vous devez être connecté", error: "Non authentifié" };
+      return { 
+        success: false, 
+        message: "Authentification requise pour valider un challenge",
+        error: "UNAUTHORIZED" 
+      };
     }
 
     const supabase = await createSupabaseClient();
 
-    // Vérifier que le challenge existe, appartient à l'utilisateur et est en attente
-    const { data: challenge, error: challengeError } = await supabase
+    
+    const { data: challengeData, error: fetchError } = await supabase
       .from('challenges')
-      .select('*')
+      .select(`
+        *,
+        transactions!inner(
+          id,
+          amount,
+          status,
+          stripe_payment_id
+        )
+      `)
       .eq('id', challengeId)
       .eq('clerk_user_id', userId)
-      .eq('status', 'pending')
+      .eq('status', 'active')
       .single();
 
-    if (challengeError || !challenge) {
+    if (fetchError) {
+      console.error('Database error fetching challenge:', fetchError);
       return {
         success: false,
-        message: "Challenge non trouvé ou déjà complété",
-        error: challengeError?.message
+        message: "Erreur lors de la récupération du challenge",
+        error: fetchError.code === 'PGRST116' ? 'CHALLENGE_NOT_FOUND' : 'DATABASE_ERROR'
       };
     }
 
-    // Mettre à jour le statut du challenge
-    const { error: updateError } = await supabase
-      .from('challenges')
-      .update({
-        status: 'success' as ChallengeStatus,
-        notes: accomplishmentNote || null
-      })
-      .eq('id', challengeId);
-
-    if (updateError) {
+    if (!challengeData) {
       return {
         success: false,
-        message: "Erreur lors de la mise à jour du challenge",
-        error: updateError.message
+        message: "Challenge non trouvé, déjà complété, ou vous n'avez pas les permissions",
+        error: 'CHALLENGE_NOT_ACCESSIBLE'
       };
     }
 
-    // Gérer la distribution de l'argent
-    const newTransactionStatus = donateToAssociation ? 'donated' : 'refunded';
+    // 4. Vérification de la date de fin
+    const now = new Date();
+    const endDate = new Date(challengeData.end_date);
+    
+    if (now > endDate) {
+      return {
+        success: false,
+        message: "La période du challenge est expirée",
+        error: 'CHALLENGE_EXPIRED'
+      };
+    }
 
-    const { error: transactionError } = await supabase
-      .from('transactions')
-      .update({
-        status: newTransactionStatus
-      })
-      .eq('challenge_id', challengeId);
+    // 5. Calcul du montant de remboursement (96%)
+    const totalAmount = challengeData.transactions.amount;
+    const refundAmount = donateToAssociation ? 0 : Math.round(totalAmount * 0.96 * 100) / 100;
+
+    // 6. Transaction atomique pour mettre à jour challenge et transactions
+    const newTransactionStatus: TransactionStatus = donateToAssociation ? 'donated' : 'refunded';
+    
+    const { error: transactionError } = await supabase.rpc(
+      'mark_challenge_successful',
+      {
+        p_challenge_id: challengeId,
+        p_notes: accomplishmentNote || null,
+        p_rating: rating || null,
+        p_transaction_status: newTransactionStatus,
+        p_updated_at: new Date().toISOString()
+      }
+    );
 
     if (transactionError) {
+      console.error('Transaction error:', transactionError);
       return {
         success: false,
-        message: donateToAssociation
-          ? "Erreur lors de l'enregistrement du don"
-          : "Erreur lors de l'enregistrement du remboursement",
-        error: transactionError.message
+        message: "Erreur lors de la validation du challenge",
+        error: 'TRANSACTION_FAILED'
       };
     }
+
+    // 7. Retour de succès avec données détaillées
+    const successMessage = donateToAssociation
+      ? `🎉 Félicitations ! Votre challenge a été validé avec succès et ${totalAmount}€ ont été donnés à l'association.`
+      : `🎉 Félicitations ! Votre challenge a été validé avec succès. Vous recevrez un remboursement de ${refundAmount}€ (96% de votre mise).`;
 
     return {
       success: true,
-      message: donateToAssociation
-        ? "Félicitations pour votre réussite ! Votre don a été enregistré."
-        : "Félicitations pour votre réussite ! Vous recevrez 85% de votre mise."
+      message: successMessage,
+      data: {
+        challengeId,
+        newStatus: 'validated',
+        transactionStatus: newTransactionStatus,
+        refundAmount: donateToAssociation ? undefined : refundAmount
+      }
     };
+
   } catch (error: unknown) {
     console.error("Error in markChallengeAsSuccessful:", error);
+    
+    // Gestion spécifique des erreurs de validation Zod
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        message: "Données invalides : " + error.errors.map(e => e.message).join(', '),
+        error: 'VALIDATION_ERROR'
+      };
+    }
+
     return {
       success: false,
-      message: "Une erreur inattendue s'est produite",
-      error: error instanceof Error ? error.message : "Une erreur a survenu lors de la validation du succès de l'engagement",
-
+      message: "Une erreur inattendue s'est produite lors de la validation du challenge",
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR'
     };
   }
-}
-
-
-export interface MarkChallengeAsFailedParams {
-  challengeId: string;
-  failureNote?: string;
 }
 
 export async function markChallengeAsFailed(
   params: MarkChallengeAsFailedParams
 ): Promise<ChallengeActionResult> {
-  const { challengeId, failureNote } = params;
-
   try {
+    const validatedParams = markChallengeFailedSchema.parse(params);
+    const { challengeId, failureNote } = validatedParams;
+
     const { userId } = await auth();
     if (!userId) {
-      return { success: false, message: "Vous devez être connecté", error: "Non authentifié" };
+      return { 
+        success: false, 
+        message: "Authentification requise pour marquer un challenge comme échoué",
+        error: "UNAUTHORIZED" 
+      };
     }
 
     const supabase = await createSupabaseClient();
 
-
-    // Récupérer le challenge pour vérification
-    const { data: challenge, error: challengeError } = await supabase
+    const { data: challengeData, error: fetchError } = await supabase
       .from('challenges')
-      .select('*')
+      .select(`
+        *,
+        associations(
+          id,
+          name,
+          category
+        ),
+        transactions!inner(
+          id,
+          amount,
+          status,
+          stripe_payment_id,
+          commission
+        )
+      `)
       .eq('id', challengeId)
       .eq('clerk_user_id', userId)
-      .eq('status', 'pending')
+      .eq('status', 'active')
       .single();
 
-    if (challengeError || !challenge) {
+    if (fetchError) {
+      console.error('Database error fetching challenge:', fetchError);
       return {
         success: false,
-        message: "Challenge non trouvé ou déjà complété",
-        error: challengeError?.message
+        message: "Erreur lors de la récupération du challenge",
+        error: fetchError.code === 'PGRST116' ? 'CHALLENGE_NOT_FOUND' : 'DATABASE_ERROR'
       };
     }
 
-    // Mettre à jour le statut du challenge
-    const { error: updateError } = await supabase
-      .from('challenges')
-      .update({
-        status: 'failed' as ChallengeStatus,
-        notes: failureNote || null
-      })
-      .eq('id', challengeId);
-
-    if (updateError) {
+    if (!challengeData) {
       return {
         success: false,
-        message: "Erreur lors de la mise à jour du challenge",
-        error: updateError.message
+        message: "Challenge non trouvé, déjà complété, ou vous n'avez pas les permissions",
+        error: 'CHALLENGE_NOT_ACCESSIBLE'
       };
     }
 
-    // Mettre à jour la transaction pour indiquer que l'argent est donné à l'association
-    const { error: donationError } = await supabase
-      .from('transactions')
-      .update({
-        status: 'donated'
-      })
-      .eq('challenge_id', challengeId);
-
-    if (donationError) {
+    const now = new Date();
+    const endDate = new Date(challengeData.end_date);
+    
+    if (now > endDate) {
       return {
         success: false,
-        message: "Erreur lors de l'enregistrement du don",
-        error: donationError.message
+        message: "Ce challenge a déjà expiré automatiquement",
+        error: 'CHALLENGE_ALREADY_EXPIRED'
       };
     }
+
+
+    const paidTransactions =  challengeData.transactions.status === "paid" ? challengeData.transactions : undefined
+    
+    if (!paidTransactions) {
+      return {
+        success: false,
+        message: "Aucune transaction payée trouvée pour ce challenge",
+        error: 'NO_PAID_TRANSACTIONS'
+      };
+    }
+
+    const totalDonationAmount = Number(paidTransactions.amount) - (Number(paidTransactions.commission) || 0);
+    
+    const { error: transactionError } = await supabase.rpc(
+      'mark_challenge_failed',
+      {
+        p_challenge_id: challengeId,
+        p_failure_notes: failureNote || null,
+        p_updated_at: new Date().toISOString()
+      }
+    );
+
+    if (transactionError) {
+      console.error('Transaction error:', transactionError);
+      return {
+        success: false,
+        message: "Erreur lors de la validation de l'échec du challenge",
+        error: 'TRANSACTION_FAILED'
+      };
+    }
+
+    
+    const associationName = challengeData.associations?.name || 'l\'association sélectionnée';
+    const successMessage = `❌ Challenge marqué comme échoué. Un don de ${totalDonationAmount.toFixed(2)}€ sera versé à ${associationName}.`;
 
     return {
       success: true,
-      message: "Votre challenge a été marqué comme échoué. Votre mise sera reversée à l'association."
+      message: successMessage,
+      data: {
+        challengeId,
+        newStatus: 'failed',
+        transactionStatus: 'donated',
+        donationAmount: totalDonationAmount
+      }
     };
+
   } catch (error: unknown) {
     console.error("Error in markChallengeAsFailed:", error);
+    
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        message: "Données invalides : " + error.errors.map(e => e.message).join(', '),
+        error: 'VALIDATION_ERROR'
+      };
+    }
+
     return {
       success: false,
-      message: "Une erreur inattendue s'est produite",
-      error: error instanceof Error ? error.message : "Une erreur a survenu lors de la validation de l'échec de l'engagement",
+      message: "Une erreur inattendue s'est produite lors de la validation de l'échec du challenge",
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR'
     };
   }
 }
-
-
-

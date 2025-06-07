@@ -7,8 +7,6 @@ import {
   getChallenge,
   markChallengeAsSuccessful,
   markChallengeAsFailed,
-  MarkChallengeAsSuccessfulParams,
-  MarkChallengeAsFailedParams,
 } from "@/lib/actions/engagment.actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +16,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Calendar, Euro, Trophy, XCircle } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
-import { ChallengeStatus } from "@/types/challenge.types";
+import { ChallengeStatus, ChallengeWithTransactionAndAssocAndFeedback, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
 import { ButtonHandlePaiement } from "@/components/payment/payementPageClient";
 
 export const metadata: Metadata = {
-  title: "Détails du Challenge | Bet Yourself",
+  title: "Détails du Challenge | DéfiGo",
   description: "Consultez les détails de votre challenge et suivez votre progression.",
 };
 
@@ -33,8 +31,10 @@ const formatDate = (dateString: string) => {
 const getStatusBadge = (status: ChallengeStatus) => {
   const statusConfig = {
     draft: { label: "Brouillon", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
-    pending: { label: "En cours", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
     validated: { label: "Réussi", variant: "default", icon: <Trophy className="h-3 w-3" /> },
+    active: { label: "En cours", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
+    pending: { label: "En cours", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
+
     failed: { label: "Échoué", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
     expired: { label: "Expiré ", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
   };
@@ -51,6 +51,7 @@ const getStatusBadge = (status: ChallengeStatus) => {
 
 
 async function handleMarkAsSuccessful(formData: FormData, challengeId: string) {
+
   const donateAnyway = formData.get("donateAnyway") === "on";
   const notes = formData.get("notes") as string;
 
@@ -61,7 +62,6 @@ async function handleMarkAsSuccessful(formData: FormData, challengeId: string) {
   };
 
   await markChallengeAsSuccessful(params);
-
   redirect(`/engagement/${challengeId}?success=true`);
 }
 
@@ -73,7 +73,9 @@ async function handleMarkAsFailed(formData: FormData, challengeId: string) {
     failureNote: notes
   };
 
-  await markChallengeAsFailed(params);
+  const result = await markChallengeAsFailed(params);
+
+  console.log("resultbaby", result)
 
   redirect(`/engagement/${challengeId}?failed=true`);
 }
@@ -81,11 +83,13 @@ async function handleMarkAsFailed(formData: FormData, challengeId: string) {
 interface PageProps {
   params: Promise<{
     id: string
-  }>
+  }>,
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+
 }
 // Composant de page
 export default async function ChallengeDetailsPage({
-  params,
+  params, searchParams
 }: PageProps) {
   const { userId } = await auth();
   const { id } = await params;
@@ -93,24 +97,26 @@ export default async function ChallengeDetailsPage({
     redirect("/sign-in");
   }
 
-  const challenge = await getChallenge(id);
-
+  const challenge: ChallengeWithTransactionAndAssocAndFeedback = await getChallenge(id);
   if (!challenge) {
     console.error("Erreur lors de la récupération du challenge:");
     notFound();
   }
 
 
-  const isPending = challenge.status === "pending";
+  const isActive = challenge.status === "active";
   const isSuccess = challenge.status === "validated";
   const isFailed = challenge.status === "failed";
+
+  const searchParamsResolved = await searchParams
+  const retourUrl = searchParamsResolved.retour as string || '/'
 
   return (
 
     <div className="container max-w-4xl md:px-16 px-6  mx-auto py-24 ">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-        <Button variant="ghost" size="sm" asChild className="w-fit">
-          <Link href="/engagement">
+        <Button variant="ghost" size="sm" asChild className="w-fit" >
+          <Link href={"/mon-aventure"}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour
           </Link>
@@ -125,7 +131,7 @@ export default async function ChallengeDetailsPage({
               <div className="flex items-center gap-2 mb-2">
                 {getStatusBadge(challenge.status)}
                 <span className="text-sm text-muted-foreground">
-                  {challenge.status === 'pending' ? "En cours jusqu'au " + formatDate(challenge.end_date!) : ''}
+                  {challenge.status === 'active' ? "En cours jusqu'au " + formatDate(challenge.end_date!) : ''}
                 </span>
               </div>
               <CardTitle className="text-xl md:text-2xl">{challenge.title}</CardTitle>
@@ -135,7 +141,7 @@ export default async function ChallengeDetailsPage({
               {challenge.amount}€
             </div>
           </div>
-          {challenge.status == "draft" || challenge.status === "failed" &&  <ButtonHandlePaiement challenge={challenge} />}
+          {challenge.status == "draft" || challenge.status === "failed" && <ButtonHandlePaiement challenge={challenge} />}
         </CardHeader>
 
         <CardContent className="pb-6">
@@ -181,20 +187,11 @@ export default async function ChallengeDetailsPage({
                 </p>
               </div>
             </div>
-
-            {challenge.feedback_id && (
-              <div>
-                <h3 className="font-medium text-base mb-2">Notes</h3>
-                <div className="bg-muted/30 p-3 rounded-md italic">
-                  <p className="text-muted-foreground">{"challenge.accomplishment_note"}</p>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
 
-      {isPending && (
+      {isActive && (
         <div className="space-y-8">
           <div>
             <h2 className="text-xl font-semibold mb-6 flex items-center">
@@ -214,7 +211,7 @@ export default async function ChallengeDetailsPage({
                     {"J'ai réussi mon challenge !"}
                   </CardTitle>
                   <CardDescription>
-                    {"Félicitations ! Vous pouvez récupérer 85% de votre mise ou choisir de la donner à l'association."}                  </CardDescription>
+                    {"Félicitations ! Vous pouvez récupérer 96% de votre mise ou choisir de la donner à l'association."}                  </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <form action={async (formData) => {
@@ -311,13 +308,13 @@ export default async function ChallengeDetailsPage({
                     </svg>
                   </div>
                   <p>
-                    {challenge.transaction?.status === "refunded"
-                      ? "Vous avez récupéré 85% de votre mise, soit " + (challenge.amount * 0.85).toFixed(2) + "€."
+                    {challenge.transactions?.status === "refunded"
+                      ? "Vous avez récupéré 96% de votre mise, soit " + (challenge.amount * 0.96).toFixed(2) + "€."
                       : "Vous avez choisi de donner votre mise à l'association " + (challenge.associations.name || "choisie") + ". Merci pour votre générosité !"}
                   </p>
                 </div>
 
-                {1 == 1 && (
+                {challenge.challenge_feedbacks && (
                   <div className="p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-100 dark:border-gray-800">
                     <h3 className="text-sm font-medium mb-2 flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -325,14 +322,16 @@ export default async function ChallengeDetailsPage({
                       </svg>
                       Vos notes
                     </h3>
-                    <p className="text-sm italic bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-100 dark:border-gray-700">{"challenge.notes"}</p>
+                    <p className="text-sm italic bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-100 dark:border-gray-700">
+                      {challenge.challenge_feedbacks.comment ?? "Pas de notes"}
+                    </p>
                   </div>
                 )}
               </div>
             </CardContent>
             <CardFooter className="bg-gray-50/50 dark:bg-gray-900/10 border-t border-gray-100 dark:border-gray-800 py-4">
               <Button asChild variant="outline" className="border-green-200 hover:bg-green-50 hover:text-green-700">
-                <Link href="/engagement" className="flex items-center">
+                <Link href="/mon-aventure" className="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                     <path d="m15 18-6-6 6-6"></path>
                   </svg>
@@ -384,14 +383,14 @@ export default async function ChallengeDetailsPage({
                       </svg>
                       Vos notes
                     </h3>
-                    <p className="text-sm italic bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-100 dark:border-gray-700">{"challenge.notes"}</p>
+                    <p className="text-sm italic bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-100 dark:border-gray-700">{challenge.challenge_feedbacks?.comment ?? "Pas de notes"}</p>
                   </div>
                 )}
               </div>
             </CardContent>
             <CardFooter className="bg-gray-50/50 dark:bg-gray-900/10 border-t border-gray-100 dark:border-gray-800 py-4">
               <Button asChild variant="outline" className="border-red-200 hover:bg-red-50 hover:text-red-700">
-                <Link href="/engagement" className="flex items-center">
+                <Link href="/mon-aventure" className="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                     <path d="m15 18-6-6 6-6"></path>
                   </svg>

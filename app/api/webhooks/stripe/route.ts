@@ -159,7 +159,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       const { error: updateError } = await supabase
         .from('transactions')
         .update({
-          status: 'completed',
+          status: "paid",
           stripe_session_id: session.id,
           stripe_payment_id: session.payment_intent as string,
           webhook_received_at: new Date().toISOString(),

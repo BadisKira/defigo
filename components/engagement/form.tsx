@@ -52,7 +52,7 @@ import { createChallenge } from "@/lib/actions/engagment.actions";
 import { useAssociations } from "@/hooks/useAssocations";
 import { Association } from "@/types/types";
 
-const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.15);
+const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.04);
 
 
 
@@ -192,8 +192,8 @@ export function EngagementForm() {
                   </FormControl>
                   {watchedAmount >= 10 && watchedAmount <= 500 && (
                     <FormDescription className="mt-2 text-sm text-gray-600">
-                      Commission plateforme (15%): {platformCommission.toFixed(2)} €<br />
-                      {"Montant potentiel reversé à l'association"} (85%): {associationPayout.toFixed(2)} €
+                      Commission plateforme (4%): {platformCommission.toFixed(2)} €<br />
+                      {"Montant potentiel reversé à l'association"} (96%): {associationPayout.toFixed(2)} €
                     </FormDescription>
                   )}
                   <FormMessage />
@@ -356,8 +356,8 @@ export function EngagementForm() {
           <DialogHeader>
             <DialogTitle>Confirmer la création du défi</DialogTitle>
             <DialogDescription className="text-sm">
-              Une fois le paiement validé, <b>{platformCommission.toFixed(2)} €</b> (15%) seront prélevés par la plateforme.
-              {"Le montant reversé à l'association"} <b>{form.getValues("association_id") ? allAssociations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (85%).
+              Une fois le paiement validé, <b>{platformCommission.toFixed(2)} €</b> (4%) seront prélevés par la plateforme.
+              {"Le montant reversé à l'association"} <b>{form.getValues("association_id") ? allAssociations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (96%).
               <br /><br />
               <strong>Vous serez redirigé vers la page de paiement pour finaliser votre défi.</strong>
             </DialogDescription>

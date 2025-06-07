@@ -27,7 +27,7 @@ export default function CguPage() {
         <section id="commission">
           <h2 className="text-xl font-semibold mb-2">3. Commissions et flux financiers</h2>
           <p className="text-muted-foreground">
-            Une commission fixe de 15% est prélevée sur chaque engagement, que le défi soit réussi ou non. Le reste est soit remboursé à l’utilisateur, soit transféré à l’association choisie. La plateforme encaisse les fonds directement et se réserve le droit de passer à une solution en compte de paiement type Stripe Connect.
+            Une commission fixe de 4% est prélevée sur chaque engagement, que le défi soit réussi ou non. Le reste est soit remboursé à l’utilisateur, soit transféré à l’association choisie. La plateforme encaisse les fonds directement et se réserve le droit de passer à une solution en compte de paiement type Stripe Connect.
             <br />
             [À définir] : l’utilisateur reçoit un reçu ou une confirmation de transaction. La plateforme recommande de conserver cette preuve pour ses dossiers.
           </p>
