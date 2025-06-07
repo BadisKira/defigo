@@ -30,18 +30,18 @@ export function HeroSection() {
                 </Button>
               </div>
               <div className="mt-12 flex items-center gap-8 justify-center">
-                <div>
+                {/* <div>
                   <p className="text-3xl font-bold text-secondary">1+</p>
                   <p className="text-sm text-secondary/70">Défis relevés</p>
-                </div>
+                </div> */}
                 <div>
-                  <p className="text-3xl font-bold text-secondary">10€+</p>
-                  <p className="text-sm text-secondary/70">Reversés aux assos</p>
+                  <p className="text-3xl font-bold text-secondary">{""}</p>
+                  <p className="text-sm text-secondary/70">Building en cours... </p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-3xl font-bold text-secondary">95%</p>
                   <p className="text-sm text-secondary/70">Taux de réussite</p>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

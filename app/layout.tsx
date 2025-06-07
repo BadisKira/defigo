@@ -6,8 +6,8 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
-  title: 'DéfiGo - Le seul pari où tu gagnes à réussir',
-  description: 'Défie-toi, engage-toi, aide une asso. DéfiGo est une plateforme où vous pouvez vous fixer des objectifs, déposer une mise, et réussir ou aider une association.',
+  title: 'DéfiGo - Quand tu réussis, tout le monde gagne',
+  description: 'Défie-toi, engage-toi, aide une asso. DéfiGo est une plateforme où vous pouvez vous fixer des objectifs, déposer une somme, et réussir ou aider une association.',
 };
 
 export default function RootLayout({

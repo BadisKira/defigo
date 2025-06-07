@@ -73,9 +73,8 @@ async function handleMarkAsFailed(formData: FormData, challengeId: string) {
     failureNote: notes
   };
 
-  const result = await markChallengeAsFailed(params);
+  await markChallengeAsFailed(params);
 
-  console.log("resultbaby", result)
 
   redirect(`/engagement/${challengeId}?failed=true`);
 }
@@ -83,13 +82,11 @@ async function handleMarkAsFailed(formData: FormData, challengeId: string) {
 interface PageProps {
   params: Promise<{
     id: string
-  }>,
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-
+  }>
 }
 // Composant de page
 export default async function ChallengeDetailsPage({
-  params, searchParams
+  params
 }: PageProps) {
   const { userId } = await auth();
   const { id } = await params;
@@ -104,12 +101,11 @@ export default async function ChallengeDetailsPage({
   }
 
 
+
+  const isDraft = challenge.status === "draft"
   const isActive = challenge.status === "active";
   const isSuccess = challenge.status === "validated";
   const isFailed = challenge.status === "failed";
-
-  const searchParamsResolved = await searchParams
-  const retourUrl = searchParamsResolved.retour as string || '/'
 
   return (
 
@@ -131,7 +127,7 @@ export default async function ChallengeDetailsPage({
               <div className="flex items-center gap-2 mb-2">
                 {getStatusBadge(challenge.status)}
                 <span className="text-sm text-muted-foreground">
-                  {challenge.status === 'active' ? "En cours jusqu'au " + formatDate(challenge.end_date!) : ''}
+                  {isActive ? "En cours jusqu'au " + formatDate(challenge.end_date!) : ''}
                 </span>
               </div>
               <CardTitle className="text-xl md:text-2xl">{challenge.title}</CardTitle>
@@ -140,8 +136,8 @@ export default async function ChallengeDetailsPage({
               <Euro className="mr-1.5 h-5 w-5" />
               {challenge.amount}€
             </div>
-          </div>
-          {challenge.status == "draft" || challenge.status === "failed" && <ButtonHandlePaiement challenge={challenge} />}
+          </div>        
+          {isDraft && <ButtonHandlePaiement challenge={challenge} />}
         </CardHeader>
 
         <CardContent className="pb-6">

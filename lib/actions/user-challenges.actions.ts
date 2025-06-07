@@ -2,8 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "@/lib/supabase";
-import { ChallengeStatus } from "@/types/challenge.types";
-import { Association } from "@/types/types";
+import { ChallengeStatus, ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
 
 export interface UserChallengesParams {
   status?: ChallengeStatus;
@@ -16,6 +15,8 @@ export interface UserChallengesSummary {
   successfulChallenges: number;
   failedChallenges: number;
   activeChallenges: number;
+  expiredChallenges: number;
+  draftChallenges: number;
   totalDonated: number;
   associationsDonatedTo: Array<{
     id: string;
@@ -24,11 +25,22 @@ export interface UserChallengesSummary {
   }>;
 }
 
+
+export interface UserChallengesResult {
+  challenges: ChallengeWithTransactionAndAssoc[],
+    pagination: {
+      total: number,
+      page:number,
+      limit:number,
+      totalPages: number,
+    },
+}
+
 export async function getUserChallenges({
   status,
   page = 1,
   limit = 10,
-}: UserChallengesParams = {}) {
+}: UserChallengesParams = {}):Promise<UserChallengesResult> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -36,32 +48,19 @@ export async function getUserChallenges({
   }
 
   const supabase = await createSupabaseClient();
-  const { data: userProfile, error: profileError } = await supabase
-    .from("user_profiles")
-    .select("id")
-    .eq("clerk_user_id", userId)
-    .single();
 
-  if (profileError) {
-    throw new Error("Erreur lors de la récupération du profil utilisateur");
-  }
-
-  if (!userProfile) {
-    throw new Error("Profil utilisateur introuvable");
-  }
-
-  // Construire la requête de base
+  // Construire la requête optimisée avec un seul appel
   let query = supabase
     .from("challenges")
     .select(
       `
       *,
-      transactions (*),
-      associations(id,name)
+      transactions(*),
+      associations(id, name, logo_url)
     `,
       { count: "exact" }
     )
-    .eq("user_id", userProfile.id)
+    .eq("clerk_user_id", userId)
     .order("created_at", { ascending: false });
 
   // Filtrer par statut si spécifié
@@ -81,7 +80,7 @@ export async function getUserChallenges({
   }
 
   return {
-    challenges,
+    challenges: challenges || [],
     pagination: {
       total: count || 0,
       page,
@@ -91,7 +90,9 @@ export async function getUserChallenges({
   };
 }
 
-export async function getUserChallengesSummary() {
+
+
+export async function getUserChallengesSummary(): Promise<UserChallengesSummary> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -99,69 +100,40 @@ export async function getUserChallengesSummary() {
   }
 
   const supabase = await createSupabaseClient();
-  
 
-  // Récupérer les statistiques des défis
-  const { data: stats, error: statsError } = await supabase
-    .from("challenges")
-    .select("status, amount")
-    .eq("clerk_user_id", userId);
+  // Appeler la fonction PostgreSQL optimisée
+  const { data, error } = await supabase
+    .rpc('get_user_challenges_summary', {
+      user_clerk_id: userId
+    });
 
-  if (statsError) {
-    throw new Error("Erreur lors de la récupération des statistiques");
+  if (error) {
+    throw new Error(`Erreur lors de la récupération des statistiques: ${error.message}`);
   }
 
-  // Récupérer les associations auxquelles l'utilisateur a donné
-  const { data: donations, error: donationsError } = await supabase
-    .from("challenges")
-    .select(`amount,
-      associations(id,name) `)
-    .eq("clerk_user_id", userId)
-    .eq("status", "failed");
-
-  if (donationsError) {
-    throw new Error("Erreur lors de la récupération des dons");
+  if (!data || data.length === 0) {
+    return {
+      totalChallenges: 0,
+      successfulChallenges: 0,
+      failedChallenges: 0,
+      activeChallenges: 0,
+      expiredChallenges: 0,
+      draftChallenges: 0,
+      totalDonated: 0,
+      associationsDonatedTo: [],
+    };
   }
 
-  // Calculer les statistiques
-  const totalChallenges = stats.length;
-  const successfulChallenges = stats.filter(c => c.status === "success").length;
-  const failedChallenges = stats.filter(c => c.status === "failed").length;
-  const activeChallenges = stats.filter(c => c.status === "active").length;
-
-  const totalDonated = donations.reduce((sum, challenge) => {
-    const donationAmount = challenge.amount; 
-    return sum + donationAmount;
-  }, 0);
-
-  // Regrouper les dons par association
-  const associationMap = new Map();
-
-
-
-  donations.forEach(donation => {
-    const typedAssociation = donation.associations as Partial<Association>;
-    if (!typedAssociation.id) return;
-
-    const donationAmount = donation.amount * 0.85;
-    if (associationMap.has(typedAssociation.id)) {
-      const assoc = associationMap.get(typedAssociation.id);
-      assoc.amount += donationAmount;
-    } else {
-      associationMap.set(typedAssociation.id, {
-        id: typedAssociation.id,
-        name: typedAssociation.name || "Association inconnue",
-        amount: donationAmount,
-      });
-    }
-  });
+  const result = data[0];
 
   return {
-    totalChallenges,
-    successfulChallenges,
-    failedChallenges,
-    activeChallenges,
-    totalDonated : totalDonated * (100 - Number(process.env.COMMISSION_RATE!)) as number ,
-    associationsDonatedTo: Array.from(associationMap.values()),
+    totalChallenges: result.total_challenges,
+    successfulChallenges: result.successful_challenges,
+    failedChallenges: result.failed_challenges,
+    activeChallenges: result.active_challenges,
+    expiredChallenges: result.expired_challenges,
+    draftChallenges: result.draft_challenges,
+    totalDonated: Number(result.total_donated),
+    associationsDonatedTo: result.associations_donated_to || [],
   };
 }

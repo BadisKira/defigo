@@ -70,8 +70,8 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <div className="flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-8 ">
+            <div className="flex items-center space-x-6 ">
               <Link
                 href="/associations"
                 className="relative font-medium text-gray-700 hover:text-blue-600 transition-colors duration-300 group"
@@ -93,7 +93,7 @@ export function Navbar() {
 
             {/* Auth Buttons Desktop */}
             <SignedOut>
-              <div className="flex gap-3">
+              <div className="flex gap-3 translate-y-1 h-full">
                 <Button
                   asChild
                   variant="ghost"
@@ -102,7 +102,6 @@ export function Navbar() {
                 >
                   <SignInButton>
                     Se connecter
-
                   </SignInButton>
                 </Button>
                 <Button

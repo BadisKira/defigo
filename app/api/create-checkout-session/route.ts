@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // 8. URL de base moderne
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : "https://82ee-109-14-129-172.ngrok-free.app" //process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     // 9. Création session Stripe avec API moderne
     const session = await stripe.checkout.sessions.create({
