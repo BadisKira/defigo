@@ -6,7 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { ChallengeFormValues, markChallengeFailedSchema, markChallengeSchema } from "../validations/engagement.validations";
 import { createSupabaseClient } from "../supabase";
 import { ChallengeActionResult,  ChallengeWithTransactionAndAssocAndFeedback, CreateChallengeResult, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
-import { Transaction, TransactionStatus } from "@/types/transaction.types";
+import { TransactionStatus } from "@/types/transaction.types";
 import { z } from "zod";
 
 
@@ -36,8 +36,8 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
     // Préparation des données
     const dbUserId = userProfile.id;
-    const commissionRate = Number(process.env.COMMISSION_RATE || 0.04);
-    const currentTimestamp = new Date().toISOString();
+    // const commissionRate = Number(process.env.COMMISSION_RATE || 0.04);
+    // const currentTimestamp = new Date().toISOString();
 
     const challengeData = {
       user_id: dbUserId,
@@ -62,27 +62,6 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
       throw new Error(`Impossible de créer le défi: ${insertError?.message || 'Données manquantes'}`);
     }
 
-    // Création de la transaction associée
-    const transactionData: Partial<Transaction> = {
-      challenge_id: challenge.id,
-      clerk_user_id: authUserId as string,
-      amount: values.amount,
-      commission: values.amount * commissionRate,
-      status: 'initiated',
-      payment_type: 'one-time',
-      created_at: currentTimestamp,
-    };
-
-    const { error: transactionError } = await supabase
-      .from("transactions")
-      .insert([transactionData])
-      .select()
-      .single();
-
-    if (transactionError) {
-      throw new Error(`Impossible de créer la transaction: ${transactionError.message}`);
-    }
-
     revalidatePath("/engagement");
 
     return {
@@ -105,8 +84,9 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
 export async function getChallenge(challenge_id: string): Promise<ChallengeWithTransactionAndAssocAndFeedback> {
   const { userId } = await auth();
+  
   if (!userId) {
-    throw new Error("Vous devez être connecté");
+    throw new Error("Vous devez être connecté pour accéder au challenge.");
   }
 
   const supabase = await createSupabaseClient();
@@ -115,19 +95,24 @@ export async function getChallenge(challenge_id: string): Promise<ChallengeWithT
     .from('challenges')
     .select(`
       *,
-      transactions!inner(*),
-      associations!inner(id,name),
-      challenge_feedbacks (*)
+      transactions(*),
+      associations(id, name),
+      challenge_feedbacks(*)
     `)
     .eq('id', challenge_id)
     .eq('clerk_user_id', userId)
-    .limit(1);
+    .maybeSingle(); 
 
   if (error) {
-    throw new Error("Erreur lors de la récupération du challenge");
+    console.error("Erreur Supabase :", error);
+    throw new Error("Erreur lors de la récupération du challenge.");
   }
-  const challenge = data?.[0];
-  return challenge;
+
+  if (!data) {
+    throw new Error("Challenge introuvable ou vous n'y avez pas accès.");
+  }
+
+  return data as ChallengeWithTransactionAndAssocAndFeedback;
 }
 
 

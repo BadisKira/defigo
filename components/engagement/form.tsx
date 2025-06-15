@@ -51,6 +51,7 @@ import type { ChallengeFormValues } from "@/lib/validations/engagement.validatio
 import { createChallenge } from "@/lib/actions/engagment.actions";
 import { useAssociations } from "@/hooks/useAssocations";
 import { Association } from "@/types/types";
+import Link from "next/link";
 
 const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.04);
 
@@ -287,7 +288,7 @@ export function EngagementForm() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="allow_ai_usage"
               render={({ field }) => (
@@ -306,7 +307,7 @@ export function EngagementForm() {
                   </div>
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={form.control}
@@ -322,7 +323,8 @@ export function EngagementForm() {
                   </FormControl>
                   <div className="space-y-0.5">
                     <FormLabel htmlFor="accept_terms_form" className="text-sm font-normal">
-                      {"J'accepte les termes et conditions générales d'utilisation."}
+                      {"J'accepte les termes et"}
+                      <Link href={"/cgu"} className="underline font-semibold"> conditions générales  </Link> {"d'utilisation."}
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -373,7 +375,7 @@ export function EngagementForm() {
                 htmlFor="modal-terms"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {"J'accepte les termes & CGU pour finaliser."}
+                {"J'accepte les termes &"}  <Link href={"/cgu"} className="underline font-semibold"> CGU  </Link>{"pour finaliser."}
               </label>
             </div>
           </div>

@@ -20,6 +20,7 @@ export default async function EngagementPayementPage({ params }: PageProps) {
     const { id } = await params;
     const challenge = await getChallenge(id);
 
+
    
     return <PaymentPageClient challenge={challenge} />
 

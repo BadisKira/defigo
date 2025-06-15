@@ -13,7 +13,8 @@ export const transactionStatusFr: Record<TransactionStatus, string> = {
   initiated: "Initiée",
   paid: "Payée",
   refunded: "Remboursée",
-  donated: "Donnée à l’association"
+  donated: "Donnée à l’association",
+  failed:"Echouée"
 };
 
 export const paymentTypeFr: Record<PaymentType, string> = {
