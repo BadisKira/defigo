@@ -7,7 +7,6 @@ import { fr } from "date-fns/locale";
 import { Loader2, ArrowLeft, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { createStripeCheckoutSession } from "@/lib/actions/payment.actions";
 import { ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
 
 
@@ -15,7 +14,7 @@ import { ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
 export function PaymentPageClient({ challenge }: {
     challenge: ChallengeWithTransactionAndAssoc
 }) {
-    const [error, ] = useState<string | null>(null);
+    const [error,] = useState<string | null>(null);
     const router = useRouter();
 
     const commission = challenge.amount * 0.04;
@@ -126,7 +125,7 @@ export function PaymentPageClient({ challenge }: {
     );
 }
 
-export const ButtonHandlePaiement = ({challenge}: {challenge:ChallengeWithTransactionAndAssoc}) => {
+export const ButtonHandlePaiement = ({ challenge }: { challenge: ChallengeWithTransactionAndAssoc }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [, setError] = useState<string | null>(null);
     const handlePayment = async () => {
@@ -134,16 +133,28 @@ export const ButtonHandlePaiement = ({challenge}: {challenge:ChallengeWithTransa
             setIsProcessing(true);
             setError(null);
 
-            const result = await createStripeCheckoutSession({
-                challengeId: challenge.id,
-                amount: challenge.amount,
+            const response = await fetch("/api/create-checkout-session", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "Application/json"
+                },
+                body: JSON.stringify(
+                    {
+                        challengeId: challenge.id,
+                        amount: challenge.amount,
+                    }
+                )
             });
 
-            if (result.success && result.checkoutUrl) {
-                window.location.href = result.checkoutUrl;
+            const result = await response.json();
+
+
+            if (result.url && result.sessionId) {
+                window.location.href = result.url;
             } else {
                 throw new Error(result.error || "Erreur lors de la création de la session de paiement");
             }
+
 
         } catch (err) {
             console.error("Erreur paiement:", err);
@@ -153,23 +164,23 @@ export const ButtonHandlePaiement = ({challenge}: {challenge:ChallengeWithTransa
         }
     };
     return (
-         <Button
-                    onClick={handlePayment}
-                    disabled={isProcessing}
-                    size="lg"
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                    {isProcessing ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Redirection vers le paiement...
-                        </>
-                    ) : (
-                        <>
-                            <CreditCard className="mr-2 h-5 w-5" />
-                            Payer {challenge.amount}€ et Activer mon Défi
-                        </>
-                    )}
-                </Button>
+        <Button
+            onClick={handlePayment}
+            disabled={isProcessing}
+            size="lg"
+            className="w-full bg-blue-600 hover:bg-blue-700"
+        >
+            {isProcessing ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Redirection vers le paiement...
+                </>
+            ) : (
+                <>
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    Payer {challenge.amount}€ et Activer mon Défi
+                </>
+            )}
+        </Button>
     )
 }

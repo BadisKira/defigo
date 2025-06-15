@@ -1,8 +1,6 @@
 import { createSupabaseClient } from "@/lib/supabase";
 
 
-
-
 export function validatePaymentAmount(amount: number): boolean {
   const min = parseInt(process.env.MIN_PAYMENT_AMOUNT_EUR || '10');
   const max = parseInt(process.env.MAX_PAYMENT_AMOUNT_EUR || '500');
@@ -17,9 +15,9 @@ export async function verifyUserOwnsChallenge(
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('challenges')
-    .select('user_id')
+    .select('clerk_user_id')
     .eq('id', challengeId)
-    .eq('user_id', userId)
+    .eq('clerk_user_id', userId)
     .single();
     
   return !error && !!data;
