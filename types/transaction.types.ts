@@ -1,5 +1,6 @@
 export type TransactionStatus =
   | "initiated"
+  | "failed"
   | "paid"
   | "refunded"
   | "donated";
