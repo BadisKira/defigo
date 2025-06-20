@@ -21,7 +21,7 @@ const steps: Step[] = [
     id: "step-1",
     title: "Choisis ton objectif",
     description:
-      "Fixe-toi un défi personnel motivant et réaliste : perdre du poids, arrêter de fumer, apprendre une langue, courir un marathon... C'est toi qui décides !",
+      "Fixe-toi un defi personnel motivant et réaliste : perdre du poids, arrêter de fumer, apprendre une langue, courir un marathon... C'est toi qui décides !",
     icon: <Target className="h-6 w-6 text-white" />,
     gradient: "from-blue-500 to-cyan-500",
   },
@@ -45,7 +45,7 @@ const steps: Step[] = [
     id: "step-4",
     title: "Déclare le résultat",
     description:
-      "À la fin du défi, indique simplement si tu as réussi ou non. Si tu déclares ta réussite, tu récupères ta mise moins la commission de la plateforme (4%). Sinon, l’association reçoit ton don. Pas besoin d’uploader de preuve , tu es seul juge !",
+      "À la fin du defi, indique simplement si tu as réussi ou non. Si tu déclares ta réussite, tu récupères ta mise moins la commission de la plateforme (4%). Sinon, l’association reçoit ton don. Pas besoin d’uploader de preuve , tu es seul juge !",
     icon: <Award className="h-6 w-6 text-white" />,
     gradient: "from-purple-500 to-indigo-500",
   }

@@ -6,9 +6,9 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0 w-full">
-            <h2 className="font-montserrat font-bold text-2xl mb-2 flex items-center">DéfiGo</h2>
+            <h2 className="font-montserrat font-bold text-2xl mb-2 flex items-center">deKliK</h2>
             <p className="text-gray-300 max-w-md">
-              DéfiGo n&apos;est pas un site de jeux d&apos;argent. 
+              deKliK n&apos;est pas un site de jeux d&apos;argent. 
               Tu ne peux pas gagner plus que ce que tu engages.
             </p>
           </div>
@@ -59,7 +59,7 @@ export function Footer() {
         </div>
         
         <div className="mt-12 pt-6 border-t border-gray-700 text-center text-gray-400">
-          <p>© {new Date().getFullYear()} DéfiGo . Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} deKliK . Tous droits réservés.</p>
         </div>
       </div>
     </footer>

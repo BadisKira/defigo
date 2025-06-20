@@ -63,7 +63,7 @@ export function Navbar() {
           <Link href="/" className="group flex items-center">
             <div className="relative">
               <span className="manrope-400 font-bold text-2xl bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">
-                DéfiGo
+                deKliK
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] blur-sm"></div>
             </div>

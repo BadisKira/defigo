@@ -15,17 +15,17 @@ export function HeroSection() {
                 🎯 Atteins tes objectifs
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold  mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800">
-                une promesse à tenir, un objectif à accomplir
+                Le deKliK pour passer à l’action.
               </h1>
               <p className="text-xl md:text-2xl text-secondary/80 mb-10">
-                Défie-toi, engage-toi, aide une asso.
+              Un defi, un deKliK, un impact.              
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-white font-semibold text-lg px-14 py-7 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center gap-2 justify-center"
                 >
-                  <Link href={"engagement"}>Je lance mon défi</Link>
+                  <Link href={"defi"}>Je lance mon defi</Link>
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </div>

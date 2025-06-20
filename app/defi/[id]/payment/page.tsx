@@ -1,5 +1,5 @@
 import { PaymentPageClient } from "@/components/payment/payementPageClient";
-import { getChallenge } from "@/lib/actions/engagment.actions";
+import { getChallenge } from "@/lib/actions/defi.actions";
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation";
 

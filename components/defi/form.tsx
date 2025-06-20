@@ -46,18 +46,18 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { cn } from "@/lib/utils";
-import { ChallengeFormSchema } from "@/lib/validations/engagement.validations";
-import type { ChallengeFormValues } from "@/lib/validations/engagement.validations";
-import { createChallenge } from "@/lib/actions/engagment.actions";
+
+import { createChallenge } from "@/lib/actions/defi.actions";
 import { useAssociations } from "@/hooks/useAssocations";
 import { Association } from "@/types/types";
 import Link from "next/link";
+import { ChallengeFormSchema, ChallengeFormValues } from "@/lib/validations/defi.validations";
 
 const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.04);
 
 
 
-export function EngagementForm() {
+export function DefiForm() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,14 +120,14 @@ export function EngagementForm() {
       });
 
       if (result.success && result.challengeId) {
-        router.push(`/engagement/${result.challengeId}/payment`);
+        router.push(`/defi/${result.challengeId}/payment`);
       } else {
-        throw new Error(result.error || "Erreur lors de la création du défi");
+        throw new Error(result.error || "Erreur lors de la création du defi");
       }
 
     } catch (error) {
       console.error("Failed to create challenge:", error);
-      setFormError(error instanceof Error ? error.message : "Une erreur inconnue est survenue lors de la création du défi.");
+      setFormError(error instanceof Error ? error.message : "Une erreur inconnue est survenue lors de la création du defi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -136,7 +136,7 @@ export function EngagementForm() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <div className="md:col-span-2">
-        <h2 className="text-2xl font-bold mb-6 text-center">Créer un nouveau défi</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Créer un nouveau defi</h2>
         {formError && !isModalOpen && (
           <Alert variant="destructive" className="mb-4">
             <AlertTitle>Erreur</AlertTitle>
@@ -150,7 +150,7 @@ export function EngagementForm() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Titre du défi</FormLabel>
+                  <FormLabel>Titre du defi</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: Courir 5km par jour" {...field} />
                   </FormControl>
@@ -167,7 +167,7 @@ export function EngagementForm() {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Décrivez votre défi en détail..."
+                      placeholder="Décrivez votre defi en détail..."
                       className="min-h-32"
                       {...field}
                     />
@@ -336,7 +336,7 @@ export function EngagementForm() {
               {isSubmitting ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Création en cours...</>
               ) : (
-                "Créer mon défi"
+                "Créer mon defi"
               )}
             </Button>
           </form>
@@ -348,7 +348,7 @@ export function EngagementForm() {
           <InfoIcon className="h-5 w-5" />
           <AlertTitle className="font-semibold">{"Accès à l'application mobile"}</AlertTitle>
           <AlertDescription className="text-sm">
-            Une fois votre défi créé et le paiement validé, vous aurez accès à une application mobile dédiée pour vous aider à suivre votre progression et à réussir votre engagement !
+            Une fois votre defi créé et le paiement validé, vous aurez accès à une application mobile dédiée pour vous aider à suivre votre progression et à réussir votre defi !
           </AlertDescription>
         </Alert>
       </div>
@@ -356,12 +356,12 @@ export function EngagementForm() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Confirmer la création du défi</DialogTitle>
+            <DialogTitle>Confirmer la création du defi</DialogTitle>
             <DialogDescription className="text-sm">
               Une fois le paiement validé, <b>{platformCommission.toFixed(2)} €</b> (4%) seront prélevés par la plateforme.
               {"Le montant reversé à l'association"} <b>{form.getValues("association_id") ? allAssociations.find(a => a.id === form.getValues("association_id"))?.name : ''}</b> sera de <b>{associationPayout.toFixed(2)} €</b> (96%).
               <br /><br />
-              <strong>Vous serez redirigé vers la page de paiement pour finaliser votre défi.</strong>
+              <strong>Vous serez redirigé vers la page de paiement pour finaliser votre defi.</strong>
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">

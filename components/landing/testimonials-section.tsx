@@ -29,13 +29,13 @@ export function TestimonialsSection() {
 
             <>
               <Sparkles className="w-5 h-5 text-blue-400" />
-              <span className="text-blue-300 font-medium">Commencez votre défi</span>
+              <span className="text-blue-300 font-medium">Commencez votre defi</span>
             </>
 
           </div>
 
           <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-6 leading-tight">
-            {"Votre premier défi vous attend"}
+            {"Votre premier defi vous attend"}
           </h2>
 
           <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
@@ -70,11 +70,11 @@ export function TestimonialsSection() {
 
               {/* Titre et description */}
               <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                Créez votre premier défi
+                Créez votre premier defi
               </h3>
 
               <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-                Transformez vos objectifs en engagement concret. Fixez-vous un défi, misez sur votre réussite et laissez la motivation financière vous pousser vers le succès.
+                Transformez vos objectifs en defi concret. Fixez-vous un defi, misez sur votre réussite et laissez la motivation financière vous pousser vers le succès.
               </p>
 
 
@@ -84,10 +84,10 @@ export function TestimonialsSection() {
                 variant={"ghost"}
                 className="group/btn relative inline-flex items-center space-x-3 bg-gradient-to-r from-gray-700 via-blue-600 to-purple-600 hover:from-gray-600 hover:via-blue-500 hover:to-purple-500 text-white font-bold py-8 px-8 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/25 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
               >
-                <Link href={"/engagement"}>
+                <Link href={"/defi"}>
                   <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 rounded-2xl "></div>
                   <Sparkles className="w-6 h-6 group-hover/btn:rotate-12 transition-transform duration-300" />
-                  <span className="text-xl">Commencer mon défi</span>
+                  <span className="text-xl">Commencer mon defi</span>
                   <ArrowRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform duration-300" />
                 </Link>
               </Button>

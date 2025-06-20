@@ -11,23 +11,23 @@ export default function CguPage() {
         <section id="presentation">
           <h2 className="text-xl font-semibold mb-2">1. Présentation du service</h2>
           <p className="text-muted-foreground">
-            Bet Yourself est une plateforme d&apos;engagement personnel exploitée par une auto-entreprise enregistrée en France sous le numéro SIRET [à compléter].
-            Elle permet aux utilisateurs de se fixer un défi personnel, de déposer une somme d&apos;argent associée, et de récupérer cette somme en cas de réussite. En cas d&apos;échec, la somme est reversée à une association choisie par l&apos;utilisateur, après déduction d&apos;une commission.
+            Bet Yourself est une plateforme d&apos;defi personnel exploitée par une auto-entreprise enregistrée en France sous le numéro SIRET [à compléter].
+            Elle permet aux utilisateurs de se fixer un defi personnel, de déposer une somme d&apos;argent associée, et de récupérer cette somme en cas de réussite. En cas d&apos;échec, la somme est reversée à une association choisie par l&apos;utilisateur, après déduction d&apos;une commission.
           </p>
         </section>
 
         <section id="fonctionnement">
           <h2 className="text-xl font-semibold mb-2">2. Fonctionnement</h2>
           <p className="text-muted-foreground">
-            L&apos;utilisateur renseigne un défi, une date de début, une durée, un montant, et une association bénéficiaire. Le paiement est traité via un prestataire sécurisé.
-            La réussite du défi est déclarée par l&apos;utilisateur à la fin de la période. Aucune validation externe n’est exigée à ce stade.
+            L&apos;utilisateur renseigne un defi, une date de début, une durée, un montant, et une association bénéficiaire. Le paiement est traité via un prestataire sécurisé.
+            La réussite du defi est déclarée par l&apos;utilisateur à la fin de la période. Aucune validation externe n’est exigée à ce stade.
           </p>
         </section>
 
         <section id="commission">
           <h2 className="text-xl font-semibold mb-2">3. Commissions et flux financiers</h2>
           <p className="text-muted-foreground">
-            Une commission fixe de 4% est prélevée sur chaque engagement, que le défi soit réussi ou non. Le reste est soit remboursé à l’utilisateur, soit transféré à l’association choisie. La plateforme encaisse les fonds directement et se réserve le droit de passer à une solution en compte de paiement type Stripe Connect.
+            Une commission fixe de 4% est prélevée sur chaque defi, que le defi soit réussi ou non. Le reste est soit remboursé à l’utilisateur, soit transféré à l’association choisie. La plateforme encaisse les fonds directement et se réserve le droit de passer à une solution en compte de paiement type Stripe Connect.
             <br />
             [À définir] : l’utilisateur reçoit un reçu ou une confirmation de transaction. La plateforme recommande de conserver cette preuve pour ses dossiers.
           </p>
@@ -50,7 +50,7 @@ export default function CguPage() {
         <section id="responsabilite">
           <h2 className="text-xl font-semibold mb-2">6. Responsabilité</h2>
           <p className="text-muted-foreground">
-            Bet Yourself est un outil d’aide à la motivation, mais ne peut garantir la réussite des objectifs fixés par l’utilisateur. La responsabilité de la plateforme ne saurait être engagée en cas d’échec du défi, d’interprétation erronée des résultats ou d’incapacité technique temporaire. En cas de bug majeur bloquant une transaction, l’utilisateur peut contacter le support pour une résolution au cas par cas.
+            deKliK est un outil d’aide à la motivation, mais ne peut garantir la réussite des objectifs fixés par l’utilisateur. La responsabilité de la plateforme ne saurait être engagée en cas d’échec du defi, d’interprétation erronée des résultats ou d’incapacité technique temporaire. En cas de bug majeur bloquant une transaction, l’utilisateur peut contacter le support pour une résolution au cas par cas.
           </p>
         </section>
 

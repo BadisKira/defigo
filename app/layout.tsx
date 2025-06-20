@@ -6,8 +6,8 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Navbar } from '@/components/navbar';
 
 export const metadata: Metadata = {
-  title: 'DéfiGo - Quand tu réussis, tout le monde gagne',
-  description: 'Défie-toi, engage-toi, aide une asso. DéfiGo est une plateforme où vous pouvez vous fixer des objectifs, déposer une somme, et réussir ou aider une association.',
+  title: "deKliK – Passe à l’action, relève des défis, soutiens des causes",
+  description: "deKliK t’aide à transformer tes intentions en actions. Lance des défis, bats la procrastination et soutiens des associations. Le deKliK qu’il te manquait pour avancer."
 };
 
 export default function RootLayout({

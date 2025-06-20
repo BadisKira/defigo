@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 
-import { ChallengeFormValues, markChallengeFailedSchema, markChallengeSchema } from "../validations/engagement.validations";
 import { createSupabaseClient } from "../supabase";
-import { ChallengeActionResult,  ChallengeWithTransactionAndAssocAndFeedback, CreateChallengeResult, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
+import { ChallengeActionResult, ChallengeWithTransactionAndAssocAndFeedback, CreateChallengeResult, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
 import { TransactionStatus } from "@/types/transaction.types";
 import { z } from "zod";
+import { ChallengeFormValues, markChallengeFailedSchema, markChallengeSchema } from "../validations/defi.validations";
 
 
 
@@ -51,7 +51,7 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
       status: 'draft' as const,
     };
 
-    // Création du défi
+    // Création du defi
     const { data: challenge, error: insertError } = await supabase
       .from("challenges")
       .insert([challengeData])
@@ -59,10 +59,10 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
       .single();
 
     if (insertError || !challenge) {
-      throw new Error(`Impossible de créer le défi: ${insertError?.message || 'Données manquantes'}`);
+      throw new Error(`Impossible de créer le defi: ${insertError?.message || 'Données manquantes'}`);
     }
 
-    revalidatePath("/engagement");
+    revalidatePath("/defi");
 
     return {
       success: true,
@@ -71,11 +71,11 @@ export async function createChallenge(values: ChallengeFormValues): Promise<Crea
 
   } catch (error: unknown) {
     // Log l'erreur pour le debugging
-    console.error('Erreur lors de la création du défi:', error);
+    console.error('Erreur lors de la création du defi:', error);
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Une erreur a survenu lors de la création de l'engagement",
+      error: error instanceof Error ? error.message : "Une erreur a survenu lors de la création de l'defi",
     };
   }
 }
@@ -373,6 +373,59 @@ export async function markChallengeAsFailed(
       success: false,
       message: "Une erreur inattendue s'est produite lors de la validation de l'échec du challenge",
       error: error instanceof Error ? error.message : 'UNKNOWN_ERROR'
+    };
+  }
+}
+
+
+
+
+// export async function deleteChallenge(formData: FormData) {
+export async function deleteChallenge(challengeId: string) {
+  try {
+
+    if (!challengeId?.trim()) {
+      return { success: false, error: 'ID du defi manquant' };
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Non authentifié' };
+    }
+
+    const supabase = createSupabaseClient();
+    
+    // Vérifier le statut du defi
+    const { data: challenge, error } = await supabase
+      .from('challenges')
+      .select('status')
+      .eq('id', challengeId)
+      .single();
+
+    if (error) {
+      return { success: false, error: 'defi introuvable' };
+    }
+
+    if (challenge.status !== 'draft') {
+      return { success: false, error: 'Seuls les défis en brouillon peuvent être supprimés' };
+    }
+
+    // Supprimer le defi
+    const { error: deleteError } = await supabase
+      .rpc('delete_challenge_with_transactions',{
+        p_challenge_id:challengeId
+      })
+
+    if (deleteError) {
+      return { success: false, error: 'Erreur lors de la suppression' };
+    }
+  
+    return { success: true, message: 'defi supprimé avec succès' };
+
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Erreur serveur' 
     };
   }
 }

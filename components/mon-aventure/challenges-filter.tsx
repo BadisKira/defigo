@@ -103,9 +103,9 @@ export function ChallengesFilter({ currentStatus, summary }: ChallengesFilterPro
         </Button>
       ))}
       <Button className="flex items-center gap-2" size={"sm"} asChild>
-        <Link className="flex items-center" href={"/engagement"}>
+        <Link className="flex items-center" href={"/defi"}>
             <span>
-                Lancer mon défi
+                Lancer mon defi
             </span> 
             <ArrowBigRight />
         </Link> 

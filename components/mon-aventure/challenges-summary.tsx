@@ -39,7 +39,7 @@ export function ChallengesSummary({ summary }: ChallengesSummaryProps) {
           <p className="text-xs text-muted-foreground">
             {successfulChallenges > 0 && totalChallenges > 0
               ? `${Math.round((successfulChallenges / totalChallenges) * 100)}% de réussite`
-              : "Aucun défi réussi pour l'instant"}
+              : "Aucun defi réussi pour l'instant"}
           </p>
         </CardContent>
       </Card>

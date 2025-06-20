@@ -6,7 +6,7 @@ import { Challenge } from '@/types/challenge.types'
 
 export default function PaymentSuccessPage() {
   // const [isVerifying, setIsVerifying] = useState(true)
-  const [engagement, ] = useState<Challenge | null>(null)
+  const [defi, ] = useState<Challenge | null>(null)
   // const searchParams = useSearchParams()
   // const router = useRouter()
   // const sessionId = searchParams.get('session_id')
@@ -24,7 +24,7 @@ export default function PaymentSuccessPage() {
 //       const response = await fetch(`/api/verify-payment?session_id=${sessionId}`)
 //       const data = await response.json()
       
-//       setEngagement(data.engagement)
+//       setEngagement(data.defi)
 //     } catch (error) {
 //       console.error('Erreur vérification:', error)
 //     } finally {
@@ -53,19 +53,19 @@ export default function PaymentSuccessPage() {
         </div>
         
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Engagement activé ! 🎉
+          defi activé ! 🎉
         </h1>
         
         <p className="text-gray-600 mb-6">
-          Votre engagement est maintenant actif. À vous de jouer !
+          Votre defi est maintenant actif. À vous de jouer !
         </p>
 
-        {engagement && (
+        {defi && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <h3 className="font-semibold mb-2">{engagement.title}</h3>
-            <p className="text-sm text-gray-600 mb-2">{engagement.description}</p>
+            <h3 className="font-semibold mb-2">{defi.title}</h3>
+            <p className="text-sm text-gray-600 mb-2">{defi.description}</p>
             <p className="text-sm">
-              <span className="font-semibold">Montant:</span> {engagement.amount}€
+              <span className="font-semibold">Montant:</span> {defi.amount}€
             </p>
           </div>
         )}
@@ -79,10 +79,10 @@ export default function PaymentSuccessPage() {
           </Link>
           
           <Link 
-            href="/engagement"
+            href="/defi"
             className="block w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300"
           >
-            Créer un nouvel engagement
+            Créer un nouvel defi
           </Link>
         </div>
       </div>

@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, Calendar, Target, Euro } from "lucide-react"
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Link from "next/link";
+import { deleteChallenge } from "@/lib/actions/defi.actions";
 
 interface ChallengesTableProps {
   status?: ChallengeStatus;
@@ -23,6 +24,8 @@ export function ChallengesTable({ status, page = 1 }: ChallengesTableProps) {
   const [data, setData] = useState<UserChallengesResult>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+
 
   useEffect(() => {
     async function fetchChallenges() {
@@ -110,7 +113,7 @@ export function ChallengesTable({ status, page = 1 }: ChallengesTableProps) {
       <Card>
         <CardContent className="p-6">
           <p className="text-muted-foreground text-center">
-            Aucun défi trouvé pour cette catégorie.
+            Aucun defi trouvé pour cette catégorie.
           </p>
         </CardContent>
       </Card>
@@ -169,12 +172,29 @@ export function ChallengesTable({ status, page = 1 }: ChallengesTableProps) {
             </CardContent>
             <CardFooter>
               <Button variant="secondary" size="sm" className="ml-2" asChild>
-                <Link href={`/engagement/${challenge.id}`}>Détails</Link>
+                <Link href={`/defi/${challenge.id}`}>Détails</Link>
               </Button>
 
-              {challenge.status === "draft" && <Button variant="destructive" size="sm" className="ml-2">
-                Supprimer
-              </Button>}
+              {challenge.status === "draft" &&
+
+                <Button variant="destructive"
+                  onClick={async () => {
+                    const result = await deleteChallenge(challenge.id);
+                    console.log("result ==> ", result);
+                    if (result && result.success) {
+                      const tempChallenges = data.challenges.filter((t_challenge) => challenge.id !== t_challenge.id)
+                      setData({
+                        pagination : data.pagination,
+                        challenges:tempChallenges 
+                      });
+                    }
+                  }}
+
+                  size="sm" className="ml-2">
+                  Supprimer
+                </Button>
+
+              }
             </CardFooter>
           </Card>
         ))}

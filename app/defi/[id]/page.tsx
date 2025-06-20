@@ -7,21 +7,21 @@ import {
   getChallenge,
   markChallengeAsSuccessful,
   markChallengeAsFailed,
-} from "@/lib/actions/engagment.actions";
+} from "@/lib/actions/defi.actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Calendar, Euro, Trophy, XCircle } from "lucide-react";
+import { Calendar, Euro, Trophy, XCircle } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 import { ChallengeStatus, ChallengeWithTransactionAndAssocAndFeedback, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
 import { ButtonHandlePaiement } from "@/components/payment/payementPageClient";
 
 export const metadata: Metadata = {
-  title: "Détails du Challenge | DéfiGo",
-  description: "Consultez les détails de votre challenge et suivez votre progression.",
+  title: "Détail du defi – deKliK",
+  description: " Découvre tous les détails de ton defi : objectifs, échéances, preuves à fournir et impact solidaire. Prêt à relever le challenge ?",
 };
 
 const formatDate = (dateString: string) => {
@@ -62,7 +62,7 @@ async function handleMarkAsSuccessful(formData: FormData, challengeId: string) {
   };
 
   await markChallengeAsSuccessful(params);
-  redirect(`/engagement/${challengeId}?success=true`);
+  redirect(`/defi/${challengeId}?success=true`);
 }
 
 async function handleMarkAsFailed(formData: FormData, challengeId: string) {
@@ -76,7 +76,7 @@ async function handleMarkAsFailed(formData: FormData, challengeId: string) {
   await markChallengeAsFailed(params);
 
 
-  redirect(`/engagement/${challengeId}?failed=true`);
+  redirect(`/defi/${challengeId}?failed=true`);
 }
 
 interface PageProps {
@@ -106,18 +106,14 @@ export default async function ChallengeDetailsPage({
   const isActive = challenge.status === "active";
   const isSuccess = challenge.status === "validated";
   const isFailed = challenge.status === "failed";
-
+        {/**
+md:px-16 px-6 container mx-auto py-24          
+         */}
   return (
 
-    <div className="container max-w-4xl md:px-16 px-6  mx-auto py-24 ">
+    <div className="container md:px-16 px-6  mx-auto py-24 ">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-        <Button variant="ghost" size="sm" asChild className="w-fit" >
-          <Link href={"/mon-aventure"}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
-        <h1 className="text-2xl md:text-3xl font-bold">Détails du Challenge</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Détails du defi</h1>
       </div>
 
       <Card className="mb-8 shadow-md border-muted/40 overflow-hidden">
@@ -292,7 +288,7 @@ export default async function ChallengeDetailsPage({
                 Félicitations pour votre réussite !
               </CardTitle>
               <CardDescription>
-                Vous avez relevé ce défi avec succès.
+                Vous avez relevé ce defi avec succès.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">

@@ -37,10 +37,10 @@ export function PaymentPageClient({ challenge }: {
                     </Button>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            Finalisation de votre défi
+                            Finalisation de votre defi
                         </h1>
                         <p className="text-gray-600">
-                            Une dernière étape pour activer votre défi
+                            Une dernière étape pour activer votre defi
                         </p>
                     </div>
                 </div>
@@ -51,7 +51,7 @@ export function PaymentPageClient({ challenge }: {
                     </Alert>
                 )}
 
-                {/* Détails du défi */}
+                {/* Détails du defi */}
                 <div className="bg-gray-50 rounded-lg p-6 mb-8">
                     <h2 className="text-xl font-semibold mb-3">{challenge.title}</h2>
                     <p className="text-gray-700 mb-4">{challenge.description}</p>
@@ -82,7 +82,7 @@ export function PaymentPageClient({ challenge }: {
                     {/* Détails financiers */}
                     <div className="border-t pt-4">
                         <div className="flex justify-between items-center mb-2">
-                            <span>Montant de votre défi :</span>
+                            <span>Montant de votre defi :</span>
                             <span className="font-semibold">{challenge.amount}€</span>
                         </div>
                         <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
@@ -104,7 +104,7 @@ export function PaymentPageClient({ challenge }: {
                     </h3>
                     <ul className="text-blue-800 text-sm space-y-1">
                         <li>• Vous payez maintenant pour engager votre motivation</li>
-                        <li>• Si vous réussissez votre défi, vous récupérez {netAmount.toFixed(2)}€ (96%)</li>
+                        <li>• Si vous réussissez votre defi, vous récupérez {netAmount.toFixed(2)}€ (96%)</li>
                         <li>• Si vous échouez, la somme est versée à {challenge.associations.name}</li>
                         <li>• Paiement 100% sécurisé par Stripe</li>
                     </ul>
@@ -178,7 +178,7 @@ export const ButtonHandlePaiement = ({ challenge }: { challenge: ChallengeWithTr
             ) : (
                 <>
                     <CreditCard className="mr-2 h-5 w-5" />
-                    Payer {challenge.amount}€ et Activer mon Défi
+                    Payer {challenge.amount}€ et Activer mon defi
                 </>
             )}
         </Button>

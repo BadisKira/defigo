@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
                 price_data: {
                     currency: 'eur',
                     product_data: {
-                        name: `Engagement: ${challenge?.title || 'Défi personnel'}`,
+                        name: `Défi: ${challenge?.title || 'Défi personnel'}`,
                         description: `Bénéficiaire: ${challenge?.association_name || 'Non spécifiée'}`,
                     },
                     unit_amount: amount * 100,
