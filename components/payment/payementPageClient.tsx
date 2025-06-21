@@ -70,7 +70,7 @@ export function PaymentPageClient({ challenge }: {
                         <div>
                             <span className="text-sm font-medium text-gray-500">Date de fin :</span>
                             <p className="text-gray-900">
-                                {format(new Date(challenge.start_date), "PPP", { locale: fr })}
+                                {format(new Date(challenge.end_date!), "PPP", { locale: fr })}
                             </p>
                         </div>
                         <div>

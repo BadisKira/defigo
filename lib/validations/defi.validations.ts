@@ -4,8 +4,19 @@ export const ChallengeFormSchema = z.object({
   title: z.string().min(1, { message: "Le titre est requis" }),
   description: z.string().min(1, { message: "La description est requise" }),
   amount: z.coerce.number().min(10, { message: "Le montant doit être d'au moins 10" }).max(500, { message: "Le montant ne peut pas dépasser 500" }),
-  duration_days: z.coerce.number().min(1, { message: "La durée doit être d'au moins 1 jour" }),
-  start_date: z.date({ required_error: "La date de début est requise" }),
+  duration_days: z.coerce.number()
+    .min(1, { message: "La durée doit être d'au moins 1 jour" })
+    .max(90, { message: "La durée maximale est de 90 jours" })
+    .refine((value) => {
+      // Vérifier que la durée est valide (1, 2, 4, 7, 14, 30, 60, 90 ou un nombre entre 1 et 90)
+      const validDurations = [1, 2, 4, 7, 14, 30, 60, 90];
+      return validDurations.includes(value) || (value >= 1 && value <= 90);
+    }, {
+      message: "La durée doit être de 1, 2, 4, 7, 14, 30, 60, 90 jours ou un nombre entre 1 et 90"
+    }),
+  start_date: z.date({
+    required_error: "La date de début est requise"
+  }).transform(() => new Date()),
   association_id: z.string().min(1, { message: "Veuillez sélectionner une association" }),
   allow_ai_usage: z.boolean().optional(),
   accept_terms: z.boolean().refine((val) => val === true, {
