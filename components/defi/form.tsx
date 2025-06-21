@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CalendarIcon, InfoIcon, Loader2 } from "lucide-react";
+import { InfoIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useRouter } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -45,7 +43,6 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { cn } from "@/lib/utils";
 
 import { createChallenge } from "@/lib/actions/defi.actions";
 import { useAssociations } from "@/hooks/useAssocations";
@@ -206,59 +203,79 @@ export function DefiForm() {
               <FormField
                 control={form.control}
                 name="duration_days"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Durée (jours)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="7"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const isCustom = field.value > 0 && ![1, 2, 4, 7, 14, 30, 60, 90].includes(field.value);
+                  return (
+                    <FormItem>
+                      <FormLabel>Durée du défi</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => {
+                            if (value === 'custom') {
+                              field.onChange(1); // Réinitialise à 1 jour
+                            } else {
+                              field.onChange(parseInt(value));
+                            }
+                          }}
+                          defaultValue={isCustom ? 'custom' : field.value.toString()}
+                        >
+                          <SelectTrigger>
+                            <SelectValue>
+                              {isCustom ? `${field.value} jours` : undefined}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1 jour</SelectItem>
+                            <SelectItem value="2">2 jours</SelectItem>
+                            <SelectItem value="4">4 jours</SelectItem>
+                            <SelectItem value="7">1 semaine (7 jours)</SelectItem>
+                            <SelectItem value="14">2 semaines (14 jours)</SelectItem>
+                            <SelectItem value="30">1 mois (30 jours)</SelectItem>
+                            <SelectItem value="60">2 mois (60 jours)</SelectItem>
+                            <SelectItem value="90">3 mois (90 jours)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <div className="flex items-center gap-2">
+                        <FormDescription className="mt-2 text-sm text-gray-600">
+                         {" Pour des raisons réglementaires, la durée maximale d'un défi est de 90 jours (3 mois)."}
+                        </FormDescription>
+                        <Popover>
+                          <PopoverTrigger>
+                            <div className="flex items-center">
+                              <InfoIcon className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80 p-4 bg-gray-50 rounded-lg shadow-md">
+                            <p className="text-sm text-gray-700">
+                              {"La durée maximale d'un defi est de 90 jours (3 mois)."}<br />
+                              {"Vous pouvez choisir n'importe quelle durée entre 1 et 90 jours."}
+                            </p>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
                 control={form.control}
                 name="start_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                render={({  }) => (
+                  <FormItem>
                     <FormLabel>Date de début</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: fr })
-                            ) : (
-                              <span>Choisir une date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
-                          initialFocus
-                          locale={fr}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormDescription className="mt-2 text-sm text-gray-600">
+                     {" La date de début est automatiquement définie à aujourd'hui."}
+                    </FormDescription>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        disabled
+                        value={format(new Date(), 'yyyy-MM-dd')}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -269,7 +286,7 @@ export function DefiForm() {
               control={form.control}
               name="association_id"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormLabel>Association à soutenir</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
