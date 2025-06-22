@@ -5,6 +5,7 @@ import { PartnersSection } from "@/components/landing/partners-section";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
 
 export default function Home() {
+  
   return (
     <>
     <main className="min-h-screen flex flex-col">

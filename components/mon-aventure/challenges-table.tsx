@@ -180,7 +180,6 @@ export function ChallengesTable({ status, page = 1 }: ChallengesTableProps) {
                 <Button variant="destructive"
                   onClick={async () => {
                     const result = await deleteChallenge(challenge.id);
-                    console.log("result ==> ", result);
                     if (result && result.success) {
                       const tempChallenges = data.challenges.filter((t_challenge) => challenge.id !== t_challenge.id)
                       setData({

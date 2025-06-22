@@ -1,6 +1,9 @@
+"use client"
 import Link from "next/link";
 
+
 export function Footer() {
+
   return (
     <footer className="md:px-12 px-6 bg-secondary text-white py-12">
       <div className="container mx-auto px-4">
@@ -58,6 +61,11 @@ export function Footer() {
           </div>
         </div>
         
+        {/* <div className="mt-8">
+          <h3 className="text-lg font-semibold text-white mb-4">Newsletter</h3>
+          <NewsletterForm />
+        </div> */}
+
         <div className="mt-12 pt-6 border-t border-gray-700 text-center text-gray-400">
           <p>© {new Date().getFullYear()} deKliK . Tous droits réservés.</p>
         </div>
