@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(dir /B \"D:\\Badis\\projects\\bet-yourself\\supabase\\migrations\")",
+      "Bash(npx supabase:*)",
+      "Bash(git restore:*)"
+    ],
+    "deny": []
+  }
+}
