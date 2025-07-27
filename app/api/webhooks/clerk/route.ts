@@ -5,7 +5,6 @@ import { createServiceRoleSupabaseClient } from '@/lib/supabase';
 import { headers } from 'next/headers';
 
 export async function POST(req: Request) {
-
   const Webhook_Secret = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
 
   if (!Webhook_Secret) {
@@ -46,6 +45,8 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
   const supabase = createServiceRoleSupabaseClient();
+
+
 
   // Traiter les différents types d'événements
   switch (eventType) {

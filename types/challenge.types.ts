@@ -1,72 +1,72 @@
 import { ChallengeFeedback } from "./challenge_feedback.types";
 import { Transaction, TransactionStatus } from "./transaction.types";
 import { Association } from "./types";
+import { Tables, TablesInsert, TablesUpdate, Enums } from "./supabase";
 
-export type ChallengeStatus =
-  | "draft"
-  | "active"
-  | "validated"
-  | "failed"
-  | "expired";
+// ===== TYPES DE BASE (Direct Supabase) =====
+export type Challenge = Tables<"challenges">;
+export type ChallengeInsert = TablesInsert<"challenges">;
+export type ChallengeUpdate = TablesUpdate<"challenges">;
+export type ChallengeStatus = Enums["challenge_status_enum"];
 
+// ===== TYPES MÉTIER (Custom) =====
 
-  export type StripePaymentStatus =
-  | "pending"
-  | "succeeded"
-  | "failed"
-  | "refunded";
-
-
-export interface Challenge {
-  id: string;
-  association_id?: string;
-  feedback_id?: string;
-  user_id?: string;
-  clerk_user_id?:string;
+// Interface pour les données du formulaire de création
+export interface CreateChallengeFormData {
   title: string;
   description?: string;
-  amount: number; // <= 500
+  amount: number;
   duration_days: number;
-  start_date: string;
-  end_date?: string;
-  status: ChallengeStatus; 
-  created_at: string;
-  stripe_payment_status: StripePaymentStatus; 
+  start_date: Date; // Form utilise Date, DB utilise string
+  association_id: string;
+  allow_ai_usage?: boolean;
+  accept_terms: boolean;
 }
 
+// Interface pour créer un défi en base (après transformation)
+export interface CreateChallengeData {
+  title: string;
+  description?: string | null;
+  amount: number;
+  duration_days: number;
+  start_date: string; // ISO string pour la DB
+  end_date: string; // Calculé automatiquement
+  association_id: string;
+  user_id: string;
+  status?: ChallengeStatus;
+  commission_rate?: number;
+}
 
-// autres types used in actions 
+// ===== TYPES AVEC JOINTURES =====
+
+// Défi avec transactions (pour les requêtes avec jointures)
 export interface ChallengeWithTransaction extends Challenge {
   transactions: Transaction;
 }
 
-export interface ChallengeWithTransactionAndAssoc extends ChallengeWithTransaction {
-  associations:Partial<Association>
+// Défi avec transactions et association
+export interface ChallengeWithTransactionAndAssoc extends Challenge {
+  transactions: Transaction;
+  associations: Partial<Association>;
 }
 
-export interface ChallengeWithTransactionAndAssocAndFeedback extends ChallengeWithTransactionAndAssoc {
-  challenge_feedbacks:Partial<ChallengeFeedback>
+// Défi avec toutes les relations
+export interface ChallengeWithTransactionAndAssocAndFeedback extends Challenge {
+  transactions: Transaction;
+  associations: Partial<Association>;
+  challenge_feedbacks: Partial<ChallengeFeedback>;
 }
 
-export interface GetChallengeResult {
-  challenge?: ChallengeWithTransaction;
-  error?: string;
-}
+// ===== TYPES DE RÉSULTATS =====
 
-
+// Résultat de création de défi
 export interface CreateChallengeResult {
   success: boolean;
   challengeId?: string;
   error?: string;
 }
 
-export interface ChallengeActionResult {
-  success: boolean;
-  message: string;
-  error?: string;
-}
-
-
+// Résultat générique des actions sur défi
 export interface ChallengeActionResult {
   success: boolean;
   message: string;
@@ -77,11 +77,12 @@ export interface ChallengeActionResult {
     transactionStatus: TransactionStatus;
     refundAmount?: number;
     donationAmount?: number;
-
   };
 }
 
+// ===== PARAMÈTRES DES ACTIONS =====
 
+// Paramètres pour marquer un défi comme réussi
 export interface MarkChallengeAsSuccessfulParams {
   challengeId: string;
   accomplishmentNote?: string;
@@ -89,7 +90,7 @@ export interface MarkChallengeAsSuccessfulParams {
   donateToAssociation?: boolean;
 }
 
-
+// Paramètres pour marquer un défi comme échoué
 export interface MarkChallengeAsFailedParams {
   challengeId: string;
   failureNote?: string;

@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { InfoIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { useRouter } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,15 +46,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { createChallenge } from "@/lib/actions/defi.actions";
 import { useAssociations } from "@/hooks/useAssocations";
 import { Association } from "@/types/types";
+import { CreateChallengeFormData } from "@/types/challenge.types";
 import Link from "next/link";
-import { ChallengeFormSchema, ChallengeFormValues } from "@/lib/validations/defi.validations";
+import { ChallengeFormSchema } from "@/lib/validations/defi.validations";
 
 const PLATFORM_FEE = Number(process.env.COMMISSION_RATE || 0.04);
 
 
 
 export function DefiForm() {
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalAcceptTerms, setModalAcceptTerms] = useState(false);
@@ -65,7 +64,7 @@ export function DefiForm() {
     allAssociations,
   } = useAssociations();
 
-  const form = useForm<ChallengeFormValues>({
+  const form = useForm<CreateChallengeFormData>({
     resolver: zodResolver(ChallengeFormSchema),
     defaultValues: {
       title: "",
@@ -109,22 +108,17 @@ export function DefiForm() {
     setFormError(null);
 
     try {
-      const values = form.getValues();
+      const formValues = form.getValues();
 
-      // Utiliser la Server Action pour créer le challenge ET la transaction
-      const result = await createChallenge({
-        ...values
-      });
-
-      if (result.success && result.challengeId) {
-        router.push(`/defi/${result.challengeId}/payment`);
-      } else {
-        throw new Error(result.error || "Erreur lors de la création du defi");
-      }
+      // La server action gère maintenant la redirection
+      await createChallenge(formValues);
+      
+      // Si on arrive ici, la redirection a échoué
+      setFormError("Redirection échouée, veuillez contacter le support.");
 
     } catch (error) {
-      console.error("Failed to create challenge:", error);
-      setFormError(error instanceof Error ? error.message : "Une erreur inconnue est survenue lors de la création du defi.");
+      console.error("Échec de la création du défi:", error);
+      setFormError(error instanceof Error ? error.message : "Une erreur inconnue est survenue lors de la création du défi.");
     } finally {
       setIsSubmitting(false);
     }

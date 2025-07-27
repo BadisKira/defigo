@@ -1,118 +1,153 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { z } from "zod";
 
 import { createSupabaseClient } from "../supabase";
-import { ChallengeActionResult, ChallengeWithTransactionAndAssocAndFeedback, CreateChallengeResult, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
+import { 
+  ChallengeActionResult, 
+  ChallengeWithTransactionAndAssocAndFeedback, 
+  CreateChallengeFormData,
+  ChallengeInsert,
+  MarkChallengeAsFailedParams, 
+  MarkChallengeAsSuccessfulParams 
+} from "@/types/challenge.types";
 import { TransactionStatus } from "@/types/transaction.types";
-import { z } from "zod";
-import { ChallengeFormValues, markChallengeFailedSchema, markChallengeSchema } from "../validations/defi.validations";
+import { markChallengeFailedSchema, markChallengeSchema } from "../validations/defi.validations";
 
 
+// Fonction utilitaire pour calculer la date de fin
+function calculateEndDate(startDate: Date, durationDays: number): string {
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + durationDays);
+  return endDate.toISOString();
+}
 
+// Transformation des données du formulaire vers les données de base
+function transformFormDataToDbData(
+  formData: CreateChallengeFormData, 
+  userId: string
+): ChallengeInsert {
+  const startDate = formData.start_date;
+  const endDate = calculateEndDate(startDate, formData.duration_days);
 
-export async function createChallenge(values: ChallengeFormValues): Promise<CreateChallengeResult> {
-  const { userId: authUserId } = await auth();
-  if (!authUserId) {
-    throw new Error("Utilisateur non authentifié. Veuillez vous connecter.");
-  }
+  return {
+    user_id: userId,
+    title: formData.title,
+    description: formData.description || null,
+    amount: formData.amount,
+    duration_days: formData.duration_days,
+    start_date: startDate.toISOString(),
+    end_date: endDate,
+    association_id: formData.association_id,
+    status: 'draft',
+    // commission_rate supprimé - utilise la valeur par défaut de la DB
+  };
+}
 
-  const supabase = await createSupabaseClient();
-
+export async function createChallenge(formData: CreateChallengeFormData): Promise<void> {
   try {
-    // Récupération du profil utilisateur
+    // Authentification
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      throw new Error("Utilisateur non authentifié. Veuillez vous connecter.");
+    }
+
+    const supabase = createSupabaseClient();
+
+    // Récupération optimisée du profil utilisateur (seulement l'ID)
     const { data: userProfile, error: profileError } = await supabase
       .from("user_profiles")
       .select("id")
-      .eq("clerk_user_id", authUserId)
+      .eq("clerk_user_id", clerkUserId)
       .single();
 
-
-
     if (profileError || !userProfile) {
-      throw new Error("Profil utilisateur introuvable. Assurez-vous que votre profil est correctement configuré.");
+      if (profileError?.code === 'PGRST116') {
+        throw new Error("Profil utilisateur introuvable. Veuillez contacter le support pour créer votre profil.");
+      } else {
+        throw new Error(`Erreur lors de la récupération du profil: ${profileError?.message || 'Erreur de base de données'}`);
+      }
     }
 
-    // Préparation des données
-    const dbUserId = userProfile.id;
-    // const commissionRate = Number(process.env.COMMISSION_RATE || 0.04);
-    // const currentTimestamp = new Date().toISOString();
+    // Transformation et insertion optimisées
+    const challengeInsertData = transformFormDataToDbData(formData, userProfile.id);
 
-    const challengeData = {
-      user_id: dbUserId,
-      title: values.title,
-      description: values.description,
-      clerk_user_id: authUserId,
-      amount: values.amount,
-      duration_days: values.duration_days,
-      start_date: values.start_date.toISOString(),
-      association_id: values.association_id,
-      status: 'draft' as const,
-    };
-
-    // Création du defi
     const { data: challenge, error: insertError } = await supabase
       .from("challenges")
-      .insert([challengeData])
-      .select("*")
+      .insert(challengeInsertData)
+      .select("id")
       .single();
 
     if (insertError || !challenge) {
-      throw new Error(`Impossible de créer le defi: ${insertError?.message || 'Données manquantes'}`);
+      throw new Error(`Impossible de créer le défi: ${insertError?.message || 'Données manquantes'}`);
     }
 
+    // Revalidation des chemins
     revalidatePath("/defi");
+    revalidatePath("/mon-aventure");
 
-    return {
-      success: true,
-      challengeId: challenge.id
-    };
+    // Redirection côté serveur
+    redirect(`/defi/${challenge.id}/payment`);
 
   } catch (error: unknown) {
-    // Log l'erreur pour le debugging
-    console.error('Erreur lors de la création du defi:', error);
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Une erreur a survenu lors de la création de l'defi",
-    };
+    // En cas d'erreur, on re-throw pour que le formulaire puisse l'attraper
+    throw error instanceof Error ? error : new Error("Une erreur inattendue s'est produite lors de la création du défi");
   }
 }
 
 
 
 export async function getChallenge(challenge_id: string): Promise<ChallengeWithTransactionAndAssocAndFeedback> {
-  const { userId } = await auth();
-  
-  if (!userId) {
-    throw new Error("Vous devez être connecté pour accéder au challenge.");
+  try {
+    // Authentification
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      throw new Error("Vous devez être connecté pour accéder au défi.");
+    }
+
+    const supabase = createSupabaseClient();
+
+    // Récupération du profil utilisateur pour avoir l'ID DB
+    const { data: userProfile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("clerk_user_id", clerkUserId)
+      .single();
+
+    if (profileError || !userProfile) {
+      throw new Error("Profil utilisateur introuvable.");
+    }
+
+    // Requête avec jointures et typage fort
+    const { data, error } = await supabase
+      .from('challenges')
+      .select(`
+        *,
+        transactions(*),
+        associations(id, name),
+        challenge_feedbacks(*)
+      `)
+      .eq('id', challenge_id)
+      .eq('user_id', userProfile.id) // Utiliser l'ID DB au lieu de clerk_user_id
+      .maybeSingle();
+
+    if (error) {
+      console.error("Erreur Supabase lors de la récupération du défi:", error);
+      throw new Error("Erreur lors de la récupération du défi.");
+    }
+
+    if (!data) {
+      throw new Error("Défi introuvable ou vous n'y avez pas accès.");
+    }
+
+    return data as ChallengeWithTransactionAndAssocAndFeedback;
+  } catch (error) {
+    console.error("Erreur dans getChallenge:", error);
+    throw error;
   }
-
-  const supabase = await createSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('challenges')
-    .select(`
-      *,
-      transactions(*),
-      associations(id, name),
-      challenge_feedbacks(*)
-    `)
-    .eq('id', challenge_id)
-    .eq('clerk_user_id', userId)
-    .maybeSingle(); 
-
-  if (error) {
-    console.error("Erreur Supabase :", error);
-    throw new Error("Erreur lors de la récupération du challenge.");
-  }
-
-  if (!data) {
-    throw new Error("Challenge introuvable ou vous n'y avez pas accès.");
-  }
-
-  return data as ChallengeWithTransactionAndAssocAndFeedback;
 }
 
 
@@ -133,7 +168,7 @@ export async function markChallengeAsSuccessful(
       };
     }
 
-    const supabase = await createSupabaseClient();
+    const supabase = createSupabaseClient();
 
     
     const { data: challengeData, error: fetchError } = await supabase
@@ -260,7 +295,7 @@ export async function markChallengeAsFailed(
       };
     }
 
-    const supabase = await createSupabaseClient();
+    const supabase = createSupabaseClient();
 
     const { data: challengeData, error: fetchError } = await supabase
       .from('challenges')
@@ -380,49 +415,67 @@ export async function markChallengeAsFailed(
 
 
 
-// export async function deleteChallenge(formData: FormData) {
 export async function deleteChallenge(challengeId: string) {
   try {
-
     if (!challengeId?.trim()) {
-      return { success: false, error: 'ID du defi manquant' };
+      return { success: false, error: 'ID du défi manquant' };
     }
 
-    const { userId } = await auth();
-    if (!userId) {
+    // Authentification
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return { success: false, error: 'Non authentifié' };
     }
 
     const supabase = createSupabaseClient();
     
-    // Vérifier le statut du defi
-    const { data: challenge, error } = await supabase
+    // Récupération du profil utilisateur
+    const { data: userProfile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("clerk_user_id", clerkUserId)
+      .single();
+
+    if (profileError || !userProfile) {
+      return { success: false, error: 'Profil utilisateur introuvable' };
+    }
+
+    // Vérifier le statut du défi avec typage fort
+    const { data: challenge, error: fetchError } = await supabase
       .from('challenges')
       .select('status')
       .eq('id', challengeId)
+      .eq('user_id', userProfile.id)
       .single();
 
-    if (error) {
-      return { success: false, error: 'defi introuvable' };
+    if (fetchError) {
+      console.error('Erreur lors de la récupération du défi:', fetchError);
+      return { success: false, error: 'Défi introuvable' };
     }
 
     if (challenge.status !== 'draft') {
       return { success: false, error: 'Seuls les défis en brouillon peuvent être supprimés' };
     }
 
-    // Supprimer le defi
+    // Supprimer le défi avec la procédure stockée
     const { error: deleteError } = await supabase
-      .rpc('delete_challenge_with_transactions',{
-        p_challenge_id:challengeId
-      })
+      .rpc('delete_challenge_with_transactions', {
+        p_challenge_id: challengeId
+      });
 
     if (deleteError) {
+      console.error('Erreur lors de la suppression:', deleteError);
       return { success: false, error: 'Erreur lors de la suppression' };
     }
+
+    // Revalidation des chemins
+    revalidatePath("/defi");
+    revalidatePath("/mon-aventure");
   
-    return { success: true, message: 'defi supprimé avec succès' };
+    return { success: true, message: 'Défi supprimé avec succès' };
 
   } catch (error) {
+    console.error('Erreur dans deleteChallenge:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Erreur serveur' 
