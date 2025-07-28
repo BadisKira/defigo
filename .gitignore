@@ -48,3 +48,5 @@ hooks/useAssociations.ts
 
 
 lib/sql/*
+
+supabase/*

@@ -133,6 +133,9 @@ export const ButtonHandlePaiement = ({ challenge }: { challenge: ChallengeWithTr
             setIsProcessing(true);
             setError(null);
 
+            console.log('🚀 Starting payment for challenge:', challenge.id, 'amount:', challenge.amount);
+            console.log('📋 Full challenge object:', challenge);
+
             const response = await fetch("/api/create-checkout-session", {
                 method: "POST",
                 headers: {
@@ -146,7 +149,9 @@ export const ButtonHandlePaiement = ({ challenge }: { challenge: ChallengeWithTr
                 )
             });
 
+            console.log('📡 Response status:', response.status);
             const result = await response.json();
+            console.log('📦 Response data:', result);
 
 
             if (result.url && result.sessionId) {

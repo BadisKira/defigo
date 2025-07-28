@@ -1,25 +1,28 @@
 export type TransactionStatus =
-  | "initiated"
-  | "failed"
-  | "paid"
-  | "refunded"
-  | "donated";
+  | "pending"
+  | "processing"
+  | "succeeded"
+  | "failed";
   
-export type PaymentType = "one-time";
+export type TransactionType = "capture" | "refund";
 
 
 export type Transaction = {
   id: string;
   challenge_id: string;
-  clerk_user_id: string;
+  user_id: string;
   amount: number;
-  commission?: number;
+  net_amount: number;
+  commission_amount: number;
   status: TransactionStatus;
-  payment_type: PaymentType;
-  created_at: string;            
-  stripe_payment_id?: string;    
-  stripe_session_id?: string;    
-  webhook_received_at?: string;  
-  payment_method_id?: string;    
-  refund_id?: string;            
+  type: TransactionType;
+  created_at: string;
+  updated_at: string;
+  stripe_payment_intent_id?: string | null;
+  stripe_charge_id?: string | null;
+  stripe_refund_id?: string | null;
+  stripe_webhook_id?: string | null;
+  processed_at?: string | null;
+  failure_reason?: string | null;
+  metadata?: Record<string, any> | null;
 };

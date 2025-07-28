@@ -1,38 +1,50 @@
-// app/api/webhooks/stripe/route.ts
+/**
+ * Stripe Webhook Handler - deKliK Platform
+ * Clean and functional webhook processing
+ */
+
 import { NextRequest } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-
-import { stripe } from "@/lib/stripe/stripe";
+import { stripe } from '@/lib/stripe/stripe';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase';
-import { TransactionStatus } from '@/types/transaction.types';
-
-const supabase = createServiceRoleSupabaseClient();
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const headersList = await headers();
-  const sig = headersList.get('stripe-signature');
-
-
-
-  let event: Stripe.Event;
-
+  console.log('🔗 Webhook received');
+  
   try {
-    // Vérification de la signature Stripe
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig!,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err) {
-    console.error(' Webhook signature verification failed:', err);
-    return Response.json({ error: 'Webhook signature verification failed' }, { status: 400 });
-  }
+    // 1. Parse request body and signature
+    const body = await req.text();
+    const headersList = await headers();  
+    const signature = headersList.get('stripe-signature');
+    
+    if (!signature) {
+      console.error('❌ Missing Stripe signature header');
+      return Response.json({ error: 'Missing signature' }, { status: 400 });
+    }
 
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error('❌ Missing STRIPE_WEBHOOK_SECRET environment variable');
+      return Response.json({ error: 'Webhook not configured' }, { status: 500 });
+    }
 
-  try {
-    // Vérifier si l'événement a déjà été traité (idempotence)
+    // 2. Verify webhook signature
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.error('❌ Webhook signature verification failed:', err);
+      return Response.json({ error: 'Invalid signature' }, { status: 400 });
+    }
+
+    console.log(`✅ Processing webhook event: ${event.type} (${event.id})`);
+
+    // 3. Simple idempotency check
+    const supabase = createServiceRoleSupabaseClient();
     const { data: existingEvent } = await supabase
       .from('webhook_events')
       .select('id')
@@ -40,20 +52,28 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (existingEvent) {
-      return Response.json({ received: true });
+      console.log(`⚠️ Event ${event.id} already processed, skipping`);
+      return Response.json({ received: true, duplicate: true });
     }
 
-    // Enregistrer l'événement webhook
-    await supabase
+    // 4. Record webhook event
+    const { error: recordError } = await supabase
       .from('webhook_events')
       .insert({
         stripe_event_id: event.id,
         event_type: event.type,
-        metadata: event.data,
+        stripe_data: event,
+        stripe_created_at: new Date(event.created * 1000).toISOString(),
+        received_at: new Date().toISOString(),
+        processed_at: new Date().toISOString()
       });
 
+    if (recordError) {
+      console.error('❌ Failed to record webhook event:', recordError);
+      // Continue processing even if recording fails
+    }
 
-    // Traiter selon le type d'événement
+    // 5. Process event based on type
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
@@ -70,249 +90,221 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.expired':
         await handleCheckoutSessionExpired(event.data.object as Stripe.Checkout.Session);
         break;
-
+        
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`ℹ️ Unhandled event type: ${event.type}`);
+        break;
     }
 
-    return Response.json({ received: true });
-  } catch (error) {
-    return Response.json({ error: 'Webhook processing failed' + error }, { status: 500 });
-  }
-}
-
-
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  console.log("Processing checkout session completed:", session.id);
-  
-  try {
-    const { data: result, error } = await supabase
-      .rpc('update_payment_status_atomic_v2', {
-        p_challenge_id: session.metadata!.challenge_id,
-        p_stripe_payment_id: session.payment_intent as string,
-        p_payment_status: 'paid',
-        p_stripe_session_id: session.id,
-        p_payment_method_id: session.payment_method_configuration_details?.id || null
-      });
-
-    if (error) {
-      console.error('Database error in handleCheckoutSessionCompleted:', error);
-      return;
-    }
-
-    if (!result.success) {
-      console.error('Function error:', result.error);
-      return;
-    }
-
-    console.log('Checkout session processed successfully:', result);
-    
-  } catch (error) {
-    console.error('Error in handleCheckoutSessionCompleted:', error);
-  }
-}
-
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
-  console.log("Processing payment intent succeeded:", paymentIntent.id);
-
-  try {
-    const challengeId = paymentIntent.metadata.challengeId || paymentIntent.metadata.challenge_id;
-    
-    if (!challengeId) {
-      console.error('No challenge_id found in payment intent metadata');
-      return;
-    }
-
-    const { data: result, error } = await supabase
-      .rpc('update_payment_status_atomic_v2', {
-        p_challenge_id: challengeId,
-        p_stripe_payment_id: paymentIntent.id,
-        p_payment_status: 'paid'
-      });
-
-    if (error) {
-      console.error('Database error in handlePaymentIntentSucceeded:', error);
-      return;
-    }
-
-    if (!result.success) {
-      console.error('Function error:', result.error);
-      return;
-    }
-
-    console.log('Payment intent processed successfully:', result);
-    
-  } catch (error) {
-    console.error('Error in handlePaymentIntentSucceeded:', error);
-  }
-}
-
-// Fonction utilitaire pour vérifier et corriger les transactions bloquées
-// async function fixStuckTransactions() {
-//   console.log("Checking for stuck transactions...");
-  
-//   try {
-//     // Récupérer les transactions "initiated" avec un payment_intent Stripe réussi
-//     const { data: stuckTransactions, error: fetchError } = await supabase
-//       .from('transactions')
-//       .select('*, challenges(*)')
-//       .eq('status', 'initiated')
-//       .not('stripe_payment_id', 'is', null);
-
-//     if (fetchError) {
-//       console.error('Error fetching stuck transactions:', fetchError);
-//       return;
-//     }
-
-//     console.log(`Found ${stuckTransactions?.length || 0} potentially stuck transactions`);
-
-//     // Pour chaque transaction bloquée, vérifier le statut sur Stripe
-//     for (const transaction of stuckTransactions || []) {
-//       try {
-//         // Ici vous pouvez ajouter une vérification avec l'API Stripe
-//         // const paymentIntent = await stripe.paymentIntents.retrieve(transaction.stripe_payment_id);
-        
-//         // Si le paiement est réussi sur Stripe, corriger la base de données
-//         const { data: result, error } = await supabase
-//           .rpc('update_payment_status_atomic_v2', {
-//             p_challenge_id: transaction.challenge_id,
-//             p_stripe_payment_id: transaction.stripe_payment_id,
-//             p_payment_status: 'paid'
-//           });
-
-//         if (error) {
-//           console.error(`Error fixing transaction ${transaction.id}:`, error);
-//         } else if (result.success) {
-//           console.log(`Fixed stuck transaction ${transaction.id}`);
-//         }
-        
-//       } catch (error) {
-//         console.error(`Error processing stuck transaction ${transaction.id}:`, error);
-//       }
-//     }
-    
-//   } catch (error) {
-//     console.error('Error in fixStuckTransactions:', error);
-//   }
-// }
-
-
-
-
-
-async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
-  try {
-    // Marquer la transaction comme échouée
-    const { error } = await supabase
-      .from('transactions')
-      .update({
-        status: 'failed' as TransactionStatus,
-        stripe_payment_id: paymentIntent.id,
-        webhook_received_at: new Date().toISOString(),
-      })
-      .eq('stripe_payment_id', paymentIntent.id);
-
-    
-    const {error :challengeError} = await supabase.from("challenges")
-    .update({
-      status:"draft",
-      stripe_payment_id: paymentIntent.id,
+    console.log(`✅ Webhook ${event.id} processed successfully`);
+    return Response.json({ 
+      received: true, 
+      processed: true,
+      eventType: event.type
     });
 
-    if(challengeError){
-      console.error("Failed to update challenge to draft after paiment failed",challengeError);
-      return;
-    }
-
-    if (error) {
-      console.error('Failed to update failed payment:', error);
-      return;
-    }
-
-    console.log('Failed payment processed successfully');
   } catch (error) {
-    console.error('Error in handlePaymentIntentFailed:', error);
+    console.error('❌ Webhook processing failed:', error);
+    return Response.json({ 
+      error: 'Webhook processing failed'
+    }, { status: 500 });
   }
 }
-
-
-
-
-async function handleCheckoutSessionExpired(session: Stripe.Checkout.Session) {
-  try {
-
-    const { data: transaction } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('challenge_id', session.metadata!.challenge_id)
-      .single();
-
-    // Marquer la transaction comme annulée
-    await supabase
-      .from('transactions')
-      .update({
-        status: 'failed', // je suis pas sur de ça
-        webhook_received_at: new Date().toISOString(),
-      })
-      .eq('id', transaction.id);
-
-      await supabase.
-      from("")
-
-    console.log('Expired session processed successfully');
-  } catch (error) {
-    console.error('Error in handleCheckoutSessionExpired:', error);
-  }
-}
-
-
 
 /**
- * async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
-  console.log("AAAAAAAAAAAAAAH");
-  console.log("payment Intent ==> ", paymentIntent);
-
+ * Handles successful checkout session completion
+ * Updates challenge status from draft to active
+ */
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  console.log(`📝 Processing checkout session completed: ${session.id}`);
+  
+  const supabase = createServiceRoleSupabaseClient();
+  
   try {
-    // Récupération de la transaction existante
-    const { data: transaction, error: transactionError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('challenge_id', paymentIntent.metadata.challengeId)
-      .single();
+    const challengeId = session.metadata?.challengeId;
+    const userId = session.metadata?.userId;
+    
+    if (!challengeId) {
+      throw new Error('Missing challengeId in session metadata');
+    }
+    if (!userId) {
+      throw new Error('Missing userId in session metadata');
+    }
 
-    if (transactionError || !transaction) {
-      console.error('Transaction not found for payment intent:', paymentIntent.id);
+    console.log(`🎯 Processing payment for challenge: ${challengeId}, user: ${userId}`);
+
+    // 1. Update challenge status to active
+    const { error: challengeError } = await supabase
+      .from('challenges')
+      .update({
+        status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', challengeId)
+      .eq('status', 'draft'); // Only update if still in draft
+
+    if (challengeError) {
+      console.error('❌ Failed to update challenge status:', challengeError);
+      throw challengeError;
+    }
+
+    console.log(`✅ Challenge ${challengeId} status updated to active`);
+
+    // 2. Update transaction status to succeeded
+    const { error: transactionError } = await supabase
+      .from('transactions')
+      .update({
+        status: 'succeeded',
+        stripe_payment_intent_id: session.payment_intent as string,
+        metadata: {
+          stripe_session_id: session.id,
+          completed_at: new Date().toISOString()
+        },
+        processed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('challenge_id', challengeId)
+      .eq('status', 'pending');
+
+    if (transactionError) {
+      console.error('❌ Failed to update transaction status:', transactionError);
+      throw transactionError;
+    }
+
+    console.log(`✅ Transaction updated for challenge ${challengeId}`);
+
+  } catch (error) {
+    console.error(`❌ Error processing checkout session ${session.id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Handles successful payment intent (backup processing)
+ */
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  console.log(`💳 Processing payment intent succeeded: ${paymentIntent.id}`);
+  
+  const supabase = createServiceRoleSupabaseClient();
+  
+  try {
+    const challengeId = paymentIntent.metadata.challengeId;
+    
+    if (!challengeId) {
+      console.log('ℹ️ No challengeId in payment intent metadata, skipping');
       return;
     }
 
-    // Mise à jour de la transaction avec toutes les informations de paiement
-    await supabase
+    // Update transaction with charge ID
+    const { error: transactionError } = await supabase
       .from('transactions')
       .update({
-        stripe_payment_id: paymentIntent.id,
-        status: "paid" as TransactionStatus,
-        // Mise à jour des champs de session si disponibles dans les métadonnées
-        ...(paymentIntent.metadata.sessionId && { 
-          stripe_session_id: paymentIntent.metadata.sessionId 
-        }),
-        ...(paymentIntent.metadata.paymentMethodId && { 
-          payment_method_id: paymentIntent.metadata.paymentMethodId 
-        }),
+        stripe_charge_id: paymentIntent.latest_charge as string,
+        updated_at: new Date().toISOString()
       })
-      .eq('id', transaction.id);
+      .eq('challenge_id', challengeId)
+      .eq('stripe_payment_intent_id', paymentIntent.id);
 
-    // Mise à jour du challenge
+    if (transactionError) {
+      console.error('❌ Failed to update transaction with charge ID:', transactionError);
+    } else {
+      console.log(`✅ Transaction updated with charge ID for challenge ${challengeId}`);
+    }
+
+  } catch (error) {
+    console.error(`❌ Error processing payment intent ${paymentIntent.id}:`, error);
+  }
+}
+
+/**
+ * Handles failed payment intent
+ */
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  console.log(`❌ Processing payment intent failed: ${paymentIntent.id}`);
+  
+  const supabase = createServiceRoleSupabaseClient();
+  
+  try {
+    const challengeId = paymentIntent.metadata.challengeId;
+    
+    if (!challengeId) {
+      console.log('ℹ️ No challengeId in payment intent metadata, skipping');
+      return;
+    }
+
+    // Reset challenge to draft status
     await supabase
       .from('challenges')
       .update({
-        status: 'active' as ChallengeStatus,
-        stripe_payment_status: paymentIntent.status,
+        status: 'draft',
+        updated_at: new Date().toISOString()
       })
-      .eq('id', paymentIntent.metadata.challengeId);
+      .eq('id', challengeId);
 
-    console.log('Payment intent and transaction updated successfully');
+    // Update transaction status to failed
+    await supabase
+      .from('transactions')
+      .update({
+        status: 'failed',
+        stripe_payment_intent_id: paymentIntent.id,
+        failure_reason: paymentIntent.last_payment_error?.message || 'Payment failed',
+        processed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('challenge_id', challengeId)
+      .eq('status', 'pending');
+
+    console.log(`✅ Challenge ${challengeId} reset to draft after payment failure`);
+
   } catch (error) {
-    console.error('Error in handlePaymentIntentSucceeded:', error);
+    console.error(`❌ Error processing failed payment ${paymentIntent.id}:`, error);
   }
 }
+
+/**
+ * Handles expired checkout session
  */
+async function handleCheckoutSessionExpired(session: Stripe.Checkout.Session): Promise<void> {
+  console.log(`⏰ Processing checkout session expired: ${session.id}`);
+  
+  const supabase = createServiceRoleSupabaseClient();
+  
+  try {
+    const challengeId = session.metadata?.challengeId;
+    
+    if (!challengeId) {
+      console.log('ℹ️ No challengeId in session metadata, skipping');
+      return;
+    }
+
+    // Reset challenge to draft status
+    await supabase
+      .from('challenges')
+      .update({
+        status: 'draft',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', challengeId);
+
+    // Mark transaction as failed
+    await supabase
+      .from('transactions')
+      .update({
+        status: 'failed',
+        failure_reason: 'Checkout session expired',
+        metadata: { 
+          stripe_session_id: session.id, 
+          expired_at: new Date().toISOString() 
+        },
+        processed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('challenge_id', challengeId)
+      .eq('status', 'pending');
+
+    console.log(`✅ Challenge ${challengeId} reset after session expiration`);
+
+  } catch (error) {
+    console.error(`❌ Error processing expired session ${session.id}:`, error);
+  }
+}
