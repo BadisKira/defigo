@@ -22,7 +22,7 @@ interface MonAventurePageProps {
 
 // Validation sécurisée des statuts
 const validStatuses: (ChallengeStatus | 'all')[] = [
-  'all', 'draft', 'active', 'validated', 'failed', 'expired'
+  'all', 'draft', 'active', 'completed', 'failed', 'expired', 'refunded', 'donated'
 ];
 
 function isValidStatus(status: string): status is ChallengeStatus | 'all' {

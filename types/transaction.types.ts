@@ -2,7 +2,8 @@ export type TransactionStatus =
   | "pending"
   | "processing"
   | "succeeded"
-  | "failed";
+  | "failed"
+  | "canceled";
   
 export type TransactionType = "capture" | "refund";
 

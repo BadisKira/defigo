@@ -4,6 +4,38 @@ import { auth } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "@/lib/supabase";
 import { ChallengeStatus, ChallengeWithTransactionAndAssoc } from "@/types/challenge.types";
 
+// Cache pour éviter les requêtes répétées dans la même session
+const userProfileCache = new Map<string, { id: string; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Fonction utilitaire optimisée pour récupérer l'UUID utilisateur
+async function getUserProfileId(clerkUserId: string): Promise<string> {
+  // Vérifier le cache d'abord
+  const cached = userProfileCache.get(clerkUserId);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.id;
+  }
+
+  const supabase = await createSupabaseClient();
+  const { data: userProfile, error } = await supabase
+    .from("user_profiles")
+    .select("id")
+    .eq("clerk_user_id", clerkUserId)
+    .single();
+
+  if (error || !userProfile) {
+    throw new Error("Profil utilisateur introuvable");
+  }
+
+  // Mettre en cache le résultat
+  userProfileCache.set(clerkUserId, {
+    id: userProfile.id,
+    timestamp: Date.now()
+  });
+
+  return userProfile.id;
+}
+
 export interface UserChallengesParams {
   status?: ChallengeStatus;
   page?: number;
@@ -40,38 +72,49 @@ export async function getUserChallenges({
   status,
   page = 1,
   limit = 10,
-}: UserChallengesParams = {}):Promise<UserChallengesResult> {
-  const { userId } = await auth();
+}: UserChallengesParams = {}): Promise<UserChallengesResult> {
+  const { userId: clerkUserId } = await auth();
 
-  if (!userId) {
+  if (!clerkUserId) {
     throw new Error("Vous devez être connecté pour accéder à vos défis");
   }
 
+  // Utiliser la fonction utilitaire optimisée
+  const userId = await getUserProfileId(clerkUserId);
   const supabase = await createSupabaseClient();
 
-  // Construire la requête optimisée avec un seul appel
+  // Calculer la pagination une seule fois
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  // Construire la requête optimisée avec select spécifique
   let query = supabase
     .from("challenges")
     .select(
       `
-      *,
-      transactions(*),
+      id,
+      title,
+      description,
+      amount,
+      status,
+      start_date,
+      end_date,
+      duration_days,
+      created_at,
+      updated_at,
+      transactions(id, amount, status, stripe_payment_intent_id, commission_amount),
       associations(id, name, logo_url)
     `,
       { count: "exact" }
     )
-    .eq("clerk_user_id", userId)
-    .order("created_at", { ascending: false });
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
-  // Filtrer par statut si spécifié
+  // Appliquer le filtre de statut si nécessaire
   if (status) {
     query = query.eq("status", status);
   }
-
-  // Appliquer la pagination
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-  query = query.range(from, to);
 
   const { data: challenges, count, error } = await query;
 
@@ -93,25 +136,28 @@ export async function getUserChallenges({
 
 
 export async function getUserChallengesSummary(): Promise<UserChallengesSummary> {
-  const { userId } = await auth();
+  const { userId: clerkUserId } = await auth();
 
-  if (!userId) {
+  if (!clerkUserId) {
     throw new Error("Vous devez être connecté pour accéder à vos statistiques");
   }
 
+  // Utiliser la fonction utilitaire optimisée
+  const userId = await getUserProfileId(clerkUserId);
   const supabase = await createSupabaseClient();
 
   // Appeler la fonction PostgreSQL optimisée
   const { data, error } = await supabase
     .rpc('get_user_challenges_summary', {
-      user_clerk_id: userId
+      p_user_id: userId
     });
 
   if (error) {
     throw new Error(`Erreur lors de la récupération des statistiques: ${error.message}`);
   }
 
-  if (!data || data.length === 0) {
+  // Retourner les valeurs par défaut si pas de données
+  if (!data?.[0]) {
     return {
       totalChallenges: 0,
       successfulChallenges: 0,

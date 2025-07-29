@@ -31,12 +31,12 @@ const formatDate = (dateString: string) => {
 const getStatusBadge = (status: ChallengeStatus) => {
   const statusConfig = {
     draft: { label: "Brouillon", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
-    validated: { label: "Réussi", variant: "default", icon: <Trophy className="h-3 w-3" /> },
+    completed: { label: "Réussi", variant: "default", icon: <Trophy className="h-3 w-3" /> },
     active: { label: "En cours", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
-    pending: { label: "En cours", variant: "outline", icon: <Calendar className="h-3 w-3" /> },
-
     failed: { label: "Échoué", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
-    expired: { label: "Expiré ", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
+    expired: { label: "Expiré", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
+    refunded: { label: "Remboursé", variant: "default", icon: <Trophy className="h-3 w-3" /> },
+    donated: { label: "Donné", variant: "default", icon: <Trophy className="h-3 w-3" /> },
   };
 
   const config = statusConfig[status];
@@ -104,7 +104,7 @@ export default async function ChallengeDetailsPage({
 
   const isDraft = challenge.status === "draft"
   const isActive = challenge.status === "active";
-  const isSuccess = challenge.status === "validated";
+  const isSuccess = challenge.status === "completed";
   const isFailed = challenge.status === "failed";
         {/**
 md:px-16 px-6 container mx-auto py-24          

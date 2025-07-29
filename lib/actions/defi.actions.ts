@@ -6,6 +6,36 @@ import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import { createSupabaseClient } from "../supabase";
+
+// Cache partagé pour les user profiles (même instance que user-challenges.actions.ts)
+const userProfileCache = new Map<string, { id: string; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Fonction utilitaire partagée pour récupérer l'UUID utilisateur
+async function getUserProfileId(clerkUserId: string): Promise<string> {
+  const cached = userProfileCache.get(clerkUserId);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.id;
+  }
+
+  const supabase = createSupabaseClient();
+  const { data: userProfile, error } = await supabase
+    .from("user_profiles")
+    .select("id")
+    .eq("clerk_user_id", clerkUserId)
+    .single();
+
+  if (error || !userProfile) {
+    throw new Error("Profil utilisateur introuvable");
+  }
+
+  userProfileCache.set(clerkUserId, {
+    id: userProfile.id,
+    timestamp: Date.now()
+  });
+
+  return userProfile.id;
+}
 import { 
   ChallengeActionResult, 
   ChallengeWithTransactionAndAssocAndFeedback, 
@@ -159,8 +189,8 @@ export async function markChallengeAsSuccessful(
     const { challengeId, accomplishmentNote, rating, donateToAssociation } = validatedParams;
 
     
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return { 
         success: false, 
         message: "Authentification requise pour valider un challenge",
@@ -168,22 +198,38 @@ export async function markChallengeAsSuccessful(
       };
     }
 
-    const supabase = createSupabaseClient();
+    // Utiliser la fonction utilitaire optimisée avec gestion d'erreur intégrée
+    let userId: string;
+    try {
+      userId = await getUserProfileId(clerkUserId);
+    } catch {
+      return {
+        success: false,
+        message: "Profil utilisateur introuvable",
+        error: "USER_PROFILE_NOT_FOUND"
+      };
+    }
 
+    const supabase = createSupabaseClient();
     
+    // Requête optimisée avec seulement les champs nécessaires
     const { data: challengeData, error: fetchError } = await supabase
       .from('challenges')
       .select(`
-        *,
+        id,
+        amount,
+        end_date,
+        status,
+        association_id,
         transactions!inner(
           id,
           amount,
           status,
-          stripe_payment_id
+          stripe_payment_intent_id
         )
       `)
       .eq('id', challengeId)
-      .eq('clerk_user_id', userId)
+      .eq('user_id', userId)
       .eq('status', 'active')
       .single();
 
@@ -221,7 +267,7 @@ export async function markChallengeAsSuccessful(
     const refundAmount = donateToAssociation ? 0 : Math.round(totalAmount * 0.96 * 100) / 100;
 
     // 6. Transaction atomique pour mettre à jour challenge et transactions
-    const newTransactionStatus: TransactionStatus = donateToAssociation ? 'donated' : 'refunded';
+    const newTransactionStatus: TransactionStatus = 'succeeded'; // Transaction reste succeeded, le challenge change de statut
     
     const { error: transactionError } = await supabase.rpc(
       'mark_challenge_successful',
@@ -253,7 +299,7 @@ export async function markChallengeAsSuccessful(
       message: successMessage,
       data: {
         challengeId,
-        newStatus: 'validated',
+        newStatus: donateToAssociation ? 'donated' : 'completed',
         transactionStatus: newTransactionStatus,
         refundAmount: donateToAssociation ? undefined : refundAmount
       }
@@ -286,8 +332,8 @@ export async function markChallengeAsFailed(
     const validatedParams = markChallengeFailedSchema.parse(params);
     const { challengeId, failureNote } = validatedParams;
 
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return { 
         success: false, 
         message: "Authentification requise pour marquer un challenge comme échoué",
@@ -295,27 +341,40 @@ export async function markChallengeAsFailed(
       };
     }
 
+    // Utiliser la fonction utilitaire optimisée
+    let userId: string;
+    try {
+      userId = await getUserProfileId(clerkUserId);
+    } catch {
+      return {
+        success: false,
+        message: "Profil utilisateur introuvable",
+        error: "USER_PROFILE_NOT_FOUND"
+      };
+    }
+
     const supabase = createSupabaseClient();
 
+    // Requête optimisée avec seulement les champs nécessaires
     const { data: challengeData, error: fetchError } = await supabase
       .from('challenges')
       .select(`
-        *,
+        id,
+        end_date,
+        status,
         associations(
           id,
-          name,
-          category
+          name
         ),
         transactions!inner(
           id,
           amount,
           status,
-          stripe_payment_id,
-          commission
+          commission_amount
         )
       `)
       .eq('id', challengeId)
-      .eq('clerk_user_id', userId)
+      .eq('user_id', userId)
       .eq('status', 'active')
       .single();
 
@@ -348,7 +407,7 @@ export async function markChallengeAsFailed(
     }
 
 
-    const paidTransactions =  challengeData.transactions.status === "paid" ? challengeData.transactions : undefined
+    const paidTransactions =  challengeData.transactions.status === "succeeded" ? challengeData.transactions : undefined
     
     if (!paidTransactions) {
       return {
@@ -358,7 +417,7 @@ export async function markChallengeAsFailed(
       };
     }
 
-    const totalDonationAmount = Number(paidTransactions.amount) - (Number(paidTransactions.commission) || 0);
+    const totalDonationAmount = Number(paidTransactions.amount) - (Number(paidTransactions.commission_amount) || 0);
     
     const { error: transactionError } = await supabase.rpc(
       'mark_challenge_failed',
@@ -388,7 +447,7 @@ export async function markChallengeAsFailed(
       data: {
         challengeId,
         newStatus: 'failed',
-        transactionStatus: 'donated',
+        transactionStatus: 'succeeded',
         donationAmount: totalDonationAmount
       }
     };

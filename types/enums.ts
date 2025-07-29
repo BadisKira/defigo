@@ -4,17 +4,19 @@ import { PaymentType, TransactionStatus } from "./transaction.types";
 export const challengeStatusFr: Record<ChallengeStatus, string> = {
   draft: "Brouillon",
   active: "En cours",
-  validated: "Validé",
+  completed: "Terminé",
   failed: "Échoué",
-  expired: "Expiré"
+  expired: "Expiré",
+  refunded: "Remboursé",
+  donated: "Donné"
 };
 
 export const transactionStatusFr: Record<TransactionStatus, string> = {
-  initiated: "Initiée",
-  paid: "Payée",
-  refunded: "Remboursée",
-  donated: "Donnée à l’association",
-  failed:"Echouée"
+  pending: "En attente",
+  processing: "En cours",
+  succeeded: "Réussie",
+  failed: "Échouée",
+  canceled: "Annulée"
 };
 
 export const paymentTypeFr: Record<PaymentType, string> = {

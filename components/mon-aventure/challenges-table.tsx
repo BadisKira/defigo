@@ -70,9 +70,11 @@ export function ChallengesTable({ status, page = 1 }: ChallengesTableProps) {
     const config = {
       draft: { label: "Brouillon", variant: "outline" as const },
       active: { label: "En cours", variant: "default" as const },
-      validated: { label: "Réussi", variant: "default" as const },
+      completed: { label: "Réussi", variant: "default" as const },
       failed: { label: "Échoué", variant: "destructive" as const },
       expired: { label: "Expiré", variant: "secondary" as const },
+      refunded: { label: "Remboursé", variant: "default" as const },
+      donated: { label: "Donné", variant: "default" as const },
     };
 
     return config[status] || { label: status, variant: "outline" as const };

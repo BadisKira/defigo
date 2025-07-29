@@ -42,7 +42,7 @@ export function ChallengesFilter({ currentStatus, summary }: ChallengesFilterPro
       variant: "default",
     },
     {
-      value: "validated",
+      value: "completed",
       label: "Réussis",
       count: summary.successfulChallenges,
       variant: "default",
