@@ -85,13 +85,17 @@ export interface ChallengeActionResult {
 // Paramètres pour marquer un défi comme réussi
 export interface MarkChallengeAsSuccessfulParams {
   challengeId: string;
-  accomplishmentNote?: string;
-  rating?: number; 
   donateToAssociation?: boolean;
 }
 
 // Paramètres pour marquer un défi comme échoué
 export interface MarkChallengeAsFailedParams {
   challengeId: string;
-  failureNote?: string;
+}
+
+// Paramètres pour sauvegarder le feedback utilisateur
+export interface SaveChallengeFeedbackParams {
+  challengeId: string;
+  rating: number;
+  comment?: string;
 }

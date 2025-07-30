@@ -3,21 +3,15 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import {
-  getChallenge,
-  markChallengeAsSuccessful,
-  markChallengeAsFailed,
-} from "@/lib/actions/defi.actions";
+import { getChallenge } from "@/lib/actions/defi.actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Calendar, Euro, Trophy, XCircle } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
-import { ChallengeStatus, ChallengeWithTransactionAndAssocAndFeedback, MarkChallengeAsFailedParams, MarkChallengeAsSuccessfulParams } from "@/types/challenge.types";
+import { ChallengeStatus, ChallengeWithTransactionAndAssocAndFeedback } from "@/types/challenge.types";
 import { ButtonHandlePaiement } from "@/components/payment/payementPageClient";
+import { ChallengeActions } from "@/components/defi/challenge-actions";
 
 export const metadata: Metadata = {
   title: "Détail du defi – deKliK",
@@ -50,34 +44,6 @@ const getStatusBadge = (status: ChallengeStatus) => {
 
 
 
-async function handleMarkAsSuccessful(formData: FormData, challengeId: string) {
-
-  const donateAnyway = formData.get("donateAnyway") === "on";
-  const notes = formData.get("notes") as string;
-
-  const params: MarkChallengeAsSuccessfulParams = {
-    challengeId,
-    donateToAssociation: donateAnyway,
-    accomplishmentNote: notes
-  };
-
-  await markChallengeAsSuccessful(params);
-  redirect(`/defi/${challengeId}?success=true`);
-}
-
-async function handleMarkAsFailed(formData: FormData, challengeId: string) {
-  const notes = formData.get("notes") as string;
-
-  const params: MarkChallengeAsFailedParams = {
-    challengeId,
-    failureNote: notes
-  };
-
-  await markChallengeAsFailed(params);
-
-
-  redirect(`/defi/${challengeId}?failed=true`);
-}
 
 interface PageProps {
   params: Promise<{
@@ -184,90 +150,7 @@ md:px-16 px-6 container mx-auto py-24
       </Card>
 
       {isActive && (
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-xl font-semibold mb-6 flex items-center">
-              <span className="bg-primary/10 p-1.5 rounded-md mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                  <path d="m9 12 2 2 4-4"></path>
-                </svg>
-              </span>
-              Avez-vous réussi votre challenge ?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-green-200 shadow-md hover:shadow-lg transition-shadow duration-300">
-                <CardHeader className="bg-green-50/50 dark:bg-green-950/10 border-b border-green-100 dark:border-green-900/20">
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-green-500" />
-                    {"J'ai réussi mon challenge !"}
-                  </CardTitle>
-                  <CardDescription>
-                    {"Félicitations ! Vous pouvez récupérer 96% de votre mise ou choisir de la donner à l'association."}                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <form action={async (formData) => {
-                    "use server"
-                    await handleMarkAsSuccessful(formData, id);
-                  }} className="space-y-5">
-                    <div className="flex items-center space-x-2 p-3 bg-green-50/50 dark:bg-green-950/10 rounded-md">
-                      <Switch id="donateAnyway" name="donateAnyway" />
-                      <Label htmlFor="donateAnyway" className="font-medium">{"Donner quand même à l'association"}</Label>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="successNotes" className="text-sm font-medium">Notes (optionnel)</Label>
-                      <Textarea
-                        id="successNotes"
-                        name="notes"
-                        placeholder="Partagez votre expérience ou des détails sur votre réussite..."
-                        className="min-h-[100px] resize-none"
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
-                      <Trophy className="mr-2 h-4 w-4" />
-                      {" Valider ma réussite"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              <Card className="border-red-200 shadow-md hover:shadow-lg transition-shadow duration-300">
-                <CardHeader className="bg-red-50/50 dark:bg-red-950/10 border-b border-red-100 dark:border-red-900/20">
-                  <CardTitle className="flex items-center gap-2">
-                    <XCircle className="h-5 w-5 text-red-500" />
-                    {" Je n'ai pas réussi mon challenge"}
-                  </CardTitle>
-                  <CardDescription>
-                    {"Pas de souci, votre mise sera reversée à l'association que vous avez choisie."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <form action={async (formData) => {
-                    "use server"
-                    await handleMarkAsFailed(formData, id);
-                  }} className="space-y-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="failedNotes" className="text-sm font-medium">Notes (optionnel)</Label>
-                      <Textarea
-                        id="failedNotes"
-                        name="notes"
-                        placeholder="Partagez votre expérience ou ce que vous avez appris..."
-                        className="min-h-[100px] resize-none"
-                      />
-                    </div>
-
-                    <Button type="submit" variant="outline" className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700">
-                      <XCircle className="mr-2 h-4 w-4" />
-                      {"Confirmer l'échec"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
+        <ChallengeActions challenge={challenge} challengeId={id} />
       )}
 
       {isSuccess && (
